@@ -1,0 +1,29 @@
+
+version: '3.4'
+
+services: 
+  api:
+    build: ./bee_build
+    image: ${SERVICE_NAME}
+    container_name: ${SERVICE_NAME}
+    volumes:
+      - gosrc:/go
+      - .:/go/src/${API_BASE_DIR}/${API_NAME}
+    env_file: 
+      - .env
+    ports: 
+      - "${API_PORT}:${API_PORT}"
+    environment:
+      - PLAN_ADQUISICIONES_MID_HTTP_PORT=${API_PORT}
+      - API_NAME=${API_NAME}
+      - PLAN_ADQUISICIONES_MID_RUN_MODE=dev
+      - RUN_MODE=${RUN_MODE} 
+    command: sh -c 'cd ${API_BASE_DIR}/${API_NAME};go get -v -u ./...; go mod init; bee run'
+    networks: 
+      - back_end
+volumes:
+  gosrc:  
+
+networks: 
+  back_end:
+    external: true
