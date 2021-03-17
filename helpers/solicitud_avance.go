@@ -2,6 +2,7 @@ package helpers
 
 import (
 	"encoding/json"
+	"strconv"
 
 	"github.com/udistrital/tesoreria_mid/models"
 
@@ -20,10 +21,10 @@ func CrearSolicitudAvance(solicitudAvance *models.SolicitudAvance) (sol *models.
 			return nil, Error("CrearSolicitudAvance", err2, "502")
 		}
 		// Guardar objetivo y justificacion (observaciones)
-		if _, errObj := CrearObservacion(solicitudAvance, solicitud, 5, "Objetivo"); errObj != nil {
+		if _, errObj := CrearObservacion(solicitudAvance, solicitud, solicitudAvance.Objetivo, 5, "Objetivo"); errObj != nil {
 			return nil, Error("CrearSolicitudAvance", errObj, "502")
 		}
-		if _, errJust := CrearObservacion(solicitudAvance, solicitud, 6, "Justificación"); errJust != nil {
+		if _, errJust := CrearObservacion(solicitudAvance, solicitud, solicitudAvance.Justificacion, 6, "Justificación"); errJust != nil {
 			return nil, Error("CrearSolicitudAvance", errJust, "502")
 		}
 		// Guardado en avances_crud
@@ -87,7 +88,7 @@ func CrearSolicitante(solicitudAvance *models.SolicitudAvance, solicitud *solici
 	}
 }
 
-func CrearObservacion(solicitudAvance *models.SolicitudAvance, solicitud *solicitudes_crud.Solicitud, tipoObservacionId int, titulo string) (obs *solicitudes_crud.Observacion, err map[string]interface{}) {
+func CrearObservacion(solicitudAvance *models.SolicitudAvance, solicitud *solicitudes_crud.Solicitud, valor string, tipoObservacionId int, titulo string) (obs *solicitudes_crud.Observacion, err map[string]interface{}) {
 	defer ErrorControlFunction("CrearObservacion", "502")
 	tipoObservacion := solicitudes_crud.TipoObservacion{Id: tipoObservacionId}
 	observacion := solicitudes_crud.Observacion{
@@ -95,7 +96,7 @@ func CrearObservacion(solicitudAvance *models.SolicitudAvance, solicitud *solici
 		SolicitudId:       solicitud,
 		TerceroId:         solicitudAvance.TerceroId,
 		Titulo:            titulo,
-		Valor:             solicitudAvance.Objetivo,
+		Valor:             valor,
 		Activo:            true,
 	}
 	if _, err1 := AddObservacion(&observacion); err1 == nil {
@@ -106,19 +107,19 @@ func CrearObservacion(solicitudAvance *models.SolicitudAvance, solicitud *solici
 }
 
 func AddSolicitudAvanceCrud(solicitud *avances_crud.SolicitudAvance) (id int64, err map[string]interface{}) {
-	return Add(solicitud, "avances_crud", "solicitud_avance", "AddSolicitudAvanceCrud")
+	return Add(solicitud, "avances_crud", "solicitud_avance", 2, "AddSolicitudAvanceCrud")
 }
 
 func AddSolicitud(solicitud *solicitudes_crud.Solicitud) (id int64, err map[string]interface{}) {
-	return Add(solicitud, "solicitudes_crud", "solicitud", "AddSolicitud")
+	return Add(solicitud, "solicitudes_crud", "solicitud", 2, "AddSolicitud")
 }
 
 func AddSolicitante(solicitante *solicitudes_crud.Solicitante) (id int64, err map[string]interface{}) {
-	return Add(solicitante, "solicitudes_crud", "solicitante", "AddSolicitante")
+	return Add(solicitante, "solicitudes_crud", "solicitante", 2, "AddSolicitante")
 }
 
 func AddObservacion(observacion *solicitudes_crud.Observacion) (id int64, err map[string]interface{}) {
-	return Add(observacion, "solicitudes_crud", "observacion", "AddObservacion")
+	return Add(observacion, "solicitudes_crud", "observacion", 2, "AddObservacion")
 }
 
 // OBTENCIÓN
@@ -129,29 +130,27 @@ func ObtenerSolicitudAvancePorId(id int) (sol *models.SolicitudAvance, err map[s
 	solicitudAvance := models.SolicitudAvance{}
 	// Consulta en avances_crud
 	if _, err := ObtenerSolicitudAvanceCrudPorId(id, &solicitudAvance); err == nil {
-		if _, err := ObtenerSolicitudPorId(solicitudAvance.SolicitudId, &solicitudAvance); err == nil {
-			return &solicitudAvance, nil
-		} else {
+		// Consulta en solicitudes_crud
+		_, err := ObtenerSolicitudPorId(solicitudAvance.SolicitudId, &solicitudAvance)
+		if err != nil {
 			return nil, Error("ObtenerSolicitudAvancePorId", err, "502")
 		}
+		_, err = ObtenerSolicitantePorSolicitudId(solicitudAvance.SolicitudId, &solicitudAvance)
+		if err != nil {
+			return nil, Error("ObtenerSolicitudAvancePorId", err, "502")
+		}
+		_, err = ObtenerObjetivoPorSolicitudId(solicitudAvance.SolicitudId, &solicitudAvance)
+		if err != nil {
+			return nil, Error("ObtenerSolicitudAvancePorId", err, "502")
+		}
+		_, err = ObtenerJustificacionPorSolicitudId(solicitudAvance.SolicitudId, &solicitudAvance)
+		if err != nil {
+			return nil, Error("ObtenerSolicitudAvancePorId", err, "502")
+		}
+		return &solicitudAvance, nil
 	} else {
 		return nil, Error("ObtenerSolicitudAvancePorId", err, "502")
 	}
-
-	//
-
-	// Guardado en solicitudes_crud
-	// Guardar el solicitante
-	/*if _, err2 := CrearSolicitante(solicitudAvance, solicitud); err2 != nil {
-		return nil, Error("CrearSolicitudCrud", err2, "502")
-	}
-	// Guardar objetivo y justificacion (observaciones)
-	if _, errObj := CrearObservacion(solicitudAvance, solicitud, 5, "Objetivo"); errObj != nil {
-		return nil, Error("CrearSolicitudCrud", errObj, "502")
-	}
-	if _, errJust := CrearObservacion(solicitudAvance, solicitud, 6, "Justificación"); errJust != nil {
-		return nil, Error("CrearSolicitudCrud", errJust, "502")
-	}*/
 }
 
 func ObtenerSolicitudAvanceCrudPorId(id int, solicitudAvance *models.SolicitudAvance) (sol *avances_crud.SolicitudAvance, err map[string]interface{}) {
@@ -200,16 +199,73 @@ func ObtenerSolicitudPorId(id int, solicitudAvance *models.SolicitudAvance) (sol
 	}
 }
 
+func ObtenerSolicitantePorSolicitudId(id int, solicitudAvance *models.SolicitudAvance) (solicitante *solicitudes_crud.Solicitante, err map[string]interface{}) {
+	defer ErrorControlFunction("ObtenerSolicitantePorSolicitudId", "502")
+	query := make(map[string]string)
+	query["SolicitudId"] = strconv.Itoa(id)
+	if solicitantes, err := GetAllSolicitantes(query); err == nil {
+		if len(solicitantes) > 0 {
+			sol := solicitantes[0]
+			if solicitudAvance != nil {
+				solicitudAvance.TerceroId = sol.TerceroId
+			}
+			return &sol, nil
+		} else {
+			return nil, Error("ObtenerSolicitantePorSolicitudId", "No existe solicitante asociado", "502")
+		}
+	} else {
+		return nil, Error("ObtenerSolicitantePorSolicitudId", err, "502")
+	}
+}
+
+func ObtenerObjetivoPorSolicitudId(id int, solicitudAvance *models.SolicitudAvance) (observacion *solicitudes_crud.Observacion, err map[string]interface{}) {
+	o, e := ObtenerObservacionPorSolicitudId(id, 5, solicitudAvance)
+	if e == nil && solicitudAvance != nil && o != nil {
+		solicitudAvance.Objetivo = o.Valor
+	}
+	return o, e
+}
+
+func ObtenerJustificacionPorSolicitudId(id int, solicitudAvance *models.SolicitudAvance) (observacion *solicitudes_crud.Observacion, err map[string]interface{}) {
+	o, e := ObtenerObservacionPorSolicitudId(id, 6, solicitudAvance)
+	if e == nil && solicitudAvance != nil && o != nil {
+		solicitudAvance.Justificacion = o.Valor
+	}
+	return o, e
+}
+
+func ObtenerObservacionPorSolicitudId(id int, tipo int, solicitudAvance *models.SolicitudAvance) (observacion *solicitudes_crud.Observacion, err map[string]interface{}) {
+	defer ErrorControlFunction("ObtenerObservacionPorSolicitudId", "502")
+	query := make(map[string]string)
+	query["SolicitudId"] = strconv.Itoa(id)
+	query["TipoObservacionId"] = strconv.Itoa(tipo)
+	if observaciones, err := GetAllObservaciones(query); err == nil {
+		if len(observaciones) > 0 {
+			return &observaciones[0], nil
+		} else {
+			return nil, Error("ObtenerObservacionPorSolicitudId", "No existe solicitante asociado", "502")
+		}
+	} else {
+		return nil, Error("ObtenerObservacionPorSolicitudId", err, "502")
+	}
+}
+
 func GetSolicitudAvanceCrudById(id int) (solicitud *avances_crud.SolicitudAvance, err map[string]interface{}) {
-	_, err = GetById(id, &solicitud, "avances_crud", "solicitud_avance", "GetSolicitudAvanceCrudById")
+	_, err = GetById(id, &solicitud, "avances_crud", "solicitud_avance", 2, "GetSolicitudAvanceCrudById")
 	return solicitud, err
 }
 
 func GetSolicitudCrudById(id int) (solicitud *solicitudes_crud.Solicitud, err map[string]interface{}) {
-	_, err = GetById(id, &solicitud, "solicitudes_crud", "solicitud", "GetSolicitudCrudById")
+	_, err = GetById(id, &solicitud, "solicitudes_crud", "solicitud", 1, "GetSolicitudCrudById")
 	return solicitud, err
 }
 
-/*func ObtenerSolicitudAvance(solicitudCrud solicitudes_crud.Solicitud, solicitudAvanceCrud avances_crud.SolicitudAvance, solicitante avances_crud.Solicitante, objetivo avances_crud.Observacion, justificacion avances_crud.Observacion) (solicitud models.SolicitudAvance, err error){
+func GetAllSolicitantes(query map[string]string) (solicitantes []solicitudes_crud.Solicitante, err map[string]interface{}) {
+	_, err = GetAll(&solicitantes, "solicitudes_crud", "solicitante", 1, "GetAllSolicitantes", query, nil, nil, nil, 0, 0)
+	return solicitantes, err
+}
 
-}*/
+func GetAllObservaciones(query map[string]string) (observaciones []solicitudes_crud.Observacion, err map[string]interface{}) {
+	_, err = GetAll(&observaciones, "solicitudes_crud", "observacion", 1, "GetAllObservaciones", query, nil, nil, nil, 0, 0)
+	return observaciones, err
+}
