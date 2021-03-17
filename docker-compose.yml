@@ -14,10 +14,11 @@ services:
     ports: 
       - "${API_PORT}:${API_PORT}"
     environment:
-      - PLAN_ADQUISICIONES_MID_HTTP_PORT=${API_PORT}
+      - TESORERIA_MID_HTTP_PORT=${API_PORT}
       - API_NAME=${API_NAME}
-      - PLAN_ADQUISICIONES_MID_RUN_MODE=dev
-      - RUN_MODE=${RUN_MODE} 
+      - TESORERIA_MID_RUN_MODE=${RUN_MODE}
+      - AVANCES_CRUD_URL=${AVANCES_CRUD_URL}
+      - SOLICITUDES_CRUD_URL=${SOLICITUDES_CRUD_URL}
     command: sh -c 'cd ${API_BASE_DIR}/${API_NAME};go get -v -u ./...; go mod init; bee run'
     networks: 
       - back_end

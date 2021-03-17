@@ -14,9 +14,11 @@ Api mid para el subsistema de tesoreria que hace parte del sistema KRONOS
 ### Variables de Entorno
 ```shell
 # Ejemplo que se debe actualizar acorde al proyecto
+API_NAME = [Nombre del API]
 TESORERIA_MID_HTTP_PORT = [Puerto de ejecución del API]
 TESORERIA_MID_RUN_MODE = [Modo de ejecución]
 AVANCES_CRUD_URL = [URL del despliegue del api de avances_crud]
+SOLICITUDES_CRUD_URL = [URL del despliegue del api de solicitudes_crud]
 ```
 **NOTA:** Las variables se pueden ver en el fichero conf/app.conf y .env
 
