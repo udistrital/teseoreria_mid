@@ -73,7 +73,6 @@ func (c *SolicitudAvanceController) GetOne() {
 		c.Data["json"] = map[string]interface{}{"Success": true, "Status": "200", "Message": "Request successful", "Data": solicitudAvance}
 	} else {
 		panic(helpers.Error("GetOne", err, "400"))
-		panic(helpers.Error("GetOne", "Error en los parámetros de entrada o el elemento no existe", "400"))
 	}
 	c.ServeJSON()
 }
@@ -92,7 +91,22 @@ func (c *SolicitudAvanceController) GetOne() {
 // @router / [get]
 func (c *SolicitudAvanceController) GetAll() {
 	defer helpers.ErrorControlController(c.Controller, "SolicitudAvanceController")
-
+	// Parámetros
+	var limit int = -1
+	var offset int = -1
+	if v, err := c.GetInt("limit"); err == nil {
+		limit = v
+	}
+	if v, err := c.GetInt("offset"); err == nil {
+		offset = v
+	}
+	// Llamada a helper
+	if solicitudes, err := helpers.ObtenerSolicitudesAvance(limit, offset); err == nil {
+		c.Data["json"] = map[string]interface{}{"Success": true, "Status": "200", "Message": "Request successful", "Data": solicitudes}
+	} else {
+		panic(helpers.Error("GetAll", err, "400"))
+	}
+	c.ServeJSON()
 }
 
 // Put ...
@@ -105,7 +119,26 @@ func (c *SolicitudAvanceController) GetAll() {
 // @router /:id [put]
 func (c *SolicitudAvanceController) Put() {
 	defer helpers.ErrorControlController(c.Controller, "SolicitudAvanceController")
-
+	funcion := "Put"
+	// Validación entradas
+	idStr := c.Ctx.Input.Param(":id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		panic(helpers.Error(funcion, "Error en los parámetros de entrada id no entero", "400"))
+	}
+	// Decodificación de solicitud de avance
+	solicitudAvance := models.SolicitudAvance{Id: id}
+	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &solicitudAvance); err == nil {
+		// Llamada a helper
+		if err := helpers.ActualizarSolicitudAvance(&solicitudAvance); err == nil {
+			c.Data["json"] = map[string]interface{}{"Success": true, "Status": "200", "Message": "Update successful", "Data": solicitudAvance}
+		} else {
+			panic(helpers.Error(funcion, err, "400"))
+		}
+	} else {
+		panic(helpers.Error(funcion, err, "400"))
+	}
+	c.ServeJSON()
 }
 
 // Delete ...
@@ -118,4 +151,5 @@ func (c *SolicitudAvanceController) Put() {
 func (c *SolicitudAvanceController) Delete() {
 	defer helpers.ErrorControlController(c.Controller, "SolicitudAvanceController")
 	panic(helpers.Error("Delete", "No implementado", "501"))
+	c.ServeJSON()
 }

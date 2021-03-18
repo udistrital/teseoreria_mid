@@ -2,7 +2,6 @@ package helpers
 
 import (
 	"encoding/json"
-	"reflect"
 	"strconv"
 	"strings"
 
@@ -10,20 +9,8 @@ import (
 	"github.com/udistrital/utils_oas/request"
 )
 
-// Get id from an element by reflect
-func getId(element interface{}, funcion string) (id int64, err map[string]interface{}) {
-	r := reflect.ValueOf(element)
-	f := reflect.Indirect(r).FieldByName("Id")
-	num := f.Int()
-	if num != 0 {
-		return f.Int(), nil
-	} else {
-		return 0, Error(funcion, "Error obteniendo el campo Id del elemento", "502")
-	}
-}
-
-// Cast map[string]interface{} to struct
-func MapToStruct(m map[string]interface{}, e interface{}) (err map[string]interface{}) {
+// Cast map to struct
+func MapToStruct(m interface{}, e interface{}) (err map[string]interface{}) {
 	defer ErrorControlFunction("MapToStruct", "502")
 	if jsonBody, err := json.Marshal(m); err == nil {
 		if err := json.Unmarshal(jsonBody, e); err == nil {
@@ -40,78 +27,84 @@ func MapToStruct(m map[string]interface{}, e interface{}) (err map[string]interf
 func ResultToStruct(resultado map[string]interface{}, element interface{}) (err map[string]interface{}) {
 	defer ErrorControlFunction("ResultToStruct", "502")
 	if data, ok := resultado["Data"]; ok && data != nil {
-		switch dat := data.(type) {
-		case map[string]interface{}:
-			if err := MapToStruct(dat, element); err == nil && element != nil {
-				return nil
-			} else {
-				return Error("ResultToStruct", err, "502")
-			}
+		if err := MapToStruct(data, element); err == nil && element != nil {
+			return nil
+		} else {
+			return Error("ResultToStruct", err, "502")
 		}
 	}
 	return Error("ResultToStruct", resultado, "502")
 }
 
-// Add an element
-func Add(element interface{}, api string, endpoint string, v int, funcion string) (id int64, err map[string]interface{}) {
+// Send an json element
+func Send(element interface{}, url string, tipo string, v int, funcion string) (err map[string]interface{}) {
 	defer ErrorControlFunction(funcion, "502")
 	switch v {
 	case 1:
-		if error := request.SendJson(beego.AppConfig.String(api)+endpoint, "POST", &element, element); error == nil {
-			return getId(element, funcion)
+		if error := request.SendJson(url, tipo, &element, element); error == nil {
+			return nil
 		} else {
-			return 0, Error(funcion, err, "502")
+			return Error(funcion, err, "502")
 		}
 	case 2:
 		var resultado map[string]interface{}
-		if error := request.SendJson(beego.AppConfig.String(api)+endpoint, "POST", &resultado, element); error == nil {
+		if error := request.SendJson(url, tipo, &resultado, element); error == nil {
 			if err := ResultToStruct(resultado, &element); err == nil && element != nil {
-				return getId(element, funcion)
+				return nil
 			} else {
-				return 0, Error(funcion, err, "502")
+				return Error(funcion, err, "502")
 			}
 		} else {
-			return 0, Error(funcion, err, "502")
+			return Error(funcion, err, "502")
 		}
 	default:
-		return 0, Error(funcion, "No se reconoce v", "502")
+		return Error(funcion, "No se reconoce v", "502")
 	}
 }
 
+// Add an element
+func Add(element interface{}, api string, endpoint string, v int) (err map[string]interface{}) {
+	return Send(element, beego.AppConfig.String(api)+endpoint, "POST", v, "Add")
+}
+
+// Update an element
+func Update(id int, element interface{}, api string, endpoint string, v int) (err map[string]interface{}) {
+	return Send(element, beego.AppConfig.String(api)+endpoint+"/"+strconv.Itoa(id), "PUT", v, "Update")
+}
+
 // Get one or more elements
-func Get(element interface{}, url string, v int, funcion string) (res interface{}, err map[string]interface{}) {
+func Get(element interface{}, url string, v int, funcion string) (err map[string]interface{}) {
+	defer ErrorControlFunction(funcion, "502")
 	switch v {
 	case 1:
 		if error := request.GetJson(url, &element); error == nil {
-			return element, nil
+			return nil
 		} else {
-			return nil, Error(funcion, err, "502")
+			return Error(funcion, err, "502")
 		}
 	case 2:
 		var resultado map[string]interface{}
 		if error := request.GetJson(url, &resultado); error == nil {
 			if err := ResultToStruct(resultado, &element); err == nil && element != nil {
-				return element, nil
+				return nil
 			} else {
-				return nil, Error(funcion, err, "502")
+				return Error(funcion, err, "502")
 			}
 		} else {
-			return nil, Error(funcion, err, "502")
+			return Error(funcion, err, "502")
 		}
 	default:
-		return 0, Error(funcion, "No se reconoce v", "502")
+		return Error(funcion, "No se reconoce v", "502")
 	}
 }
 
 // Get an element by id
-func GetById(id int, element interface{}, api string, endpoint string, v int, funcion string) (res interface{}, err map[string]interface{}) {
-	defer ErrorControlFunction(funcion, "502")
-	return Get(element, beego.AppConfig.String(api)+endpoint+"/"+strconv.Itoa(id), v, funcion)
+func GetById(id int, element interface{}, api string, endpoint string, v int) (err map[string]interface{}) {
+	return Get(element, beego.AppConfig.String(api)+endpoint+"/"+strconv.Itoa(id), v, "GetById")
 }
 
 // Get all elements with params
-func GetAllWithParams(elements interface{}, params map[string]string, api string, endpoint string, v int, funcion string) (res interface{}, err map[string]interface{}) {
-	defer ErrorControlFunction(funcion, "502")
+func GetAllWithParams(elements interface{}, params map[string]string, api string, endpoint string, v int, funcion string) (err map[string]interface{}) {
 	parametros := ""
 	for name, value := range params {
 		parametros += name + "=" + value + "&"
@@ -120,7 +113,8 @@ func GetAllWithParams(elements interface{}, params map[string]string, api string
 }
 
 // Get all
-func GetAll(elements interface{}, api string, endpoint string, v int, funcion string, query map[string]string, fields []string, sortby []string, order []string, limit int, offset int) (res interface{}, err map[string]interface{}) {
+func GetAll(elements interface{}, api string, endpoint string, v int, query map[string]string, fields []string, sortby []string, order []string, limit int, offset int) (err map[string]interface{}) {
+	funcion := "GetAll"
 	defer ErrorControlFunction(funcion, "502")
 	params := make(map[string]string)
 	queryString := ""
@@ -155,10 +149,10 @@ func GetAll(elements interface{}, api string, endpoint string, v int, funcion st
 	if orderString != "" {
 		params["order"] = orderString
 	}
-	if limit != 0 {
+	if limit >= 0 {
 		params["limit"] = strconv.Itoa(limit)
 	}
-	if offset != 0 {
+	if offset >= 0 {
 		params["offset"] = strconv.Itoa(offset)
 	}
 	return GetAllWithParams(elements, params, api, endpoint, v, funcion)
