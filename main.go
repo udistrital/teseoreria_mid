@@ -5,7 +5,6 @@ import (
 	"github.com/astaxie/beego/plugins/cors"
 	_ "github.com/udistrital/tesoreria_mid/routers"
 	"github.com/udistrital/utils_oas/customerror"
-	"github.com/astaxie/beego/plugins/cors"
 	apistatus "github.com/udistrital/utils_oas/apiStatusLib"
 )
 
