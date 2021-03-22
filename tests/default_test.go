@@ -18,7 +18,7 @@ func init() {
 	beego.TestBeegoInit(apppath)
 }
 
-// TestGet is a sample to run an endpoint test
+/*// TestGet is a sample to run an endpoint test
 func TestGet(t *testing.T) {
 	r, _ := http.NewRequest("GET", "/v1/object", nil)
 	w := httptest.NewRecorder()
@@ -34,5 +34,5 @@ func TestGet(t *testing.T) {
 	                So(w.Body.Len(), ShouldBeGreaterThan, 0)
 	        })
 	})
-}
+}*/
 
