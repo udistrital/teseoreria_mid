@@ -3,7 +3,7 @@ package controllers
 import (
 	"encoding/json"
 	"strconv"
-
+	"fmt"
 	"github.com/astaxie/beego"
 	"github.com/udistrital/tesoreria_mid/helpers"
 	"github.com/udistrital/tesoreria_mid/models"
@@ -48,7 +48,8 @@ func (c *SolicitudAvanceController) Post() {
 			panic(helpers.Error("Post", err3, "400"))
 		}
 	} else {
-		panic(helpers.Error("Post", "Error en los parámetros de ingreso", "400"))
+		fmt.Println(err1)
+		panic(helpers.Error("Post", "Error en los parámetros de ingreso", "400"))		
 	}
 	c.ServeJSON()
 }

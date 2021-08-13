@@ -3,7 +3,8 @@ package helpers
 import (
 	"encoding/json"
 	"strconv"
-
+	"fmt"
+	mapstructure "github.com/mitchellh/mapstructure"
 	"github.com/udistrital/tesoreria_mid/models"
 
 	avances_crud "github.com/udistrital/avances_crud/models"
@@ -17,30 +18,33 @@ func CrearSolicitudAvance(solicitudAvance *models.SolicitudAvance) (sol *models.
 	// Guardado en solicitudes_crud
 	solicitudAvance.Id = 0
 	solicitud := solicitudes_crud.Solicitud{}
-	if err1 := EnviarSolicitudCrud(&solicitud, solicitudAvance); err1 == nil {
+	if res1, err1 := EnviarSolicitudCrud(&solicitud, solicitudAvance); err1 == nil && res1 != nil {
 		// Guardar el solicitante
-		if err2 := EnviarSolicitante(&solicitudes_crud.Solicitante{},
-			solicitudAvance, &solicitud); err2 != nil {
+		if res2, err2 := EnviarSolicitante(&solicitudes_crud.Solicitante{},
+			solicitudAvance, &solicitud); err2 != nil && res2 != nil {
 			return nil, Error(funcion, err2, "502")
 		}
 		// Guardar objetivo y justificacion (observaciones)
-		if errObj := EnviarObservacion(&solicitudes_crud.Observacion{},
+		if resObj, errObj := EnviarObservacion(&solicitudes_crud.Observacion{},
 			solicitudAvance, &solicitud, solicitudAvance.Objetivo,
-			5, "Objetivo"); errObj != nil {
+			5, "Objetivo"); errObj != nil && resObj != nil {
 			return nil, Error(funcion, errObj, "502")
 		}
-		if errJust := EnviarObservacion(&solicitudes_crud.Observacion{},
+		if resJust, errJust := EnviarObservacion(&solicitudes_crud.Observacion{},
 			solicitudAvance, &solicitud, solicitudAvance.Justificacion,
-			6, "Justificación"); errJust != nil {
+			6, "Justificación"); errJust != nil && resJust != nil {
 			return nil, Error(funcion, errJust, "502")
 		}
 		// Guardado en avances_crud
 		solicitudAvanceCrud := avances_crud.SolicitudAvance{
 			SolicitudId: solicitud.Id, Activo: true}
-		if err3 := EnviarSolicitudAvanceCrud(&solicitudAvanceCrud); err3 == nil {
+		if res3, err3 := EnviarSolicitudAvanceCrud(&solicitudAvanceCrud); err3 == nil && res3 != nil {
 			solicitudAvance.Id = solicitudAvanceCrud.Id
 			solicitudAvance.FechaCreacion = solicitudAvanceCrud.FechaCreacion
 			solicitudAvance.FechaModificacion = solicitudAvanceCrud.FechaCreacion
+			if res4, err4 := EnviarSolicitudYEspecificacionTipoAvanceCrud(solicitudAvance, res3); err4 == nil && res4 != nil {
+				return solicitudAvance, nil
+			}
 			return solicitudAvance, nil
 		} else {
 			return nil, Error(funcion, err3, "502")
@@ -62,14 +66,15 @@ func ActualizarSolicitudAvance(solicitudAvance *models.SolicitudAvance) (err map
 		// Actualizacion en solicitudes_crud
 		solicitud := solicitudes_crud.Solicitud{
 			Id: solicitudAvance.SolicitudId, FechaCreacion: solicitudAvance.FechaCreacion}
-		if err := EnviarSolicitudCrud(&solicitud, solicitudAvance); err != nil {
+		if res, err := EnviarSolicitudCrud(&solicitud, solicitudAvance); err != nil  && res != nil{
 			return Error(funcion, err, "502")
 		}
 		// Guardar el solicitante
 		if solicitante, err := ObtenerSolicitantePorSolicitudId(solicitudAvance.SolicitudId, nil); err == nil {
-			if err = EnviarSolicitante(&solicitudes_crud.Solicitante{
+			var res map[string]interface{}
+			if res, err = EnviarSolicitante(&solicitudes_crud.Solicitante{
 				Id: solicitante.Id, FechaCreacion: solicitante.FechaCreacion},
-				solicitudAvance, &solicitud); err != nil {
+				solicitudAvance, &solicitud); err != nil && res != nil {
 				return Error(funcion, err, "502")
 			}
 		} else {
@@ -77,9 +82,9 @@ func ActualizarSolicitudAvance(solicitudAvance *models.SolicitudAvance) (err map
 		}
 		// Guardar objetivo
 		if obj, err := ObtenerObjetivoPorSolicitudId(solicitudAvance.SolicitudId, nil); err == nil {
-			if errObj := EnviarObservacion(&solicitudes_crud.Observacion{
+			if resObj, errObj := EnviarObservacion(&solicitudes_crud.Observacion{
 				Id: obj.Id, FechaCreacion: obj.FechaCreacion},
-				solicitudAvance, &solicitud, solicitudAvance.Objetivo, 5, "Objetivo"); errObj != nil {
+				solicitudAvance, &solicitud, solicitudAvance.Objetivo, 5, "Objetivo"); errObj != nil  && resObj != nil{
 				return Error(funcion, errObj, "502")
 			}
 		} else {
@@ -87,9 +92,9 @@ func ActualizarSolicitudAvance(solicitudAvance *models.SolicitudAvance) (err map
 		}
 		// Guardar justificación
 		if just, err := ObtenerJustificacionPorSolicitudId(solicitudAvance.SolicitudId, nil); err == nil {
-			if errJust := EnviarObservacion(&solicitudes_crud.Observacion{
+			if resJust, errJust := EnviarObservacion(&solicitudes_crud.Observacion{
 				Id: just.Id, FechaCreacion: just.FechaCreacion},
-				solicitudAvance, &solicitud, solicitudAvance.Justificacion, 6, "Justificación"); errJust != nil {
+				solicitudAvance, &solicitud, solicitudAvance.Justificacion, 6, "Justificación"); errJust != nil && resJust != nil {
 				return Error(funcion, errJust, "502")
 			}
 		} else {
@@ -165,7 +170,7 @@ func ObtenerSolicitudesAvance(limit int, offset int) (solicitudes []models.Solic
 
 // Envío
 
-func EnviarSolicitudCrud(solicitud *solicitudes_crud.Solicitud, solicitudAvance *models.SolicitudAvance) (err map[string]interface{}) {
+func EnviarSolicitudCrud(solicitud *solicitudes_crud.Solicitud, solicitudAvance *models.SolicitudAvance) (res map[string]interface{}, err map[string]interface{}) {
 	funcion := "EnviarSolicitudCrud"
 	defer ErrorControlFunction(funcion, "502")
 	referencia, errJSON := json.Marshal(map[string]interface{}{
@@ -188,21 +193,21 @@ func EnviarSolicitudCrud(solicitud *solicitudes_crud.Solicitud, solicitudAvance 
 		solicitud.Activo = solicitudAvance.Activo
 		var err1 map[string]interface{}
 		if solicitud.Id == 0 {
-			err1 = Add(solicitud, "solicitudes_crud", "solicitud", 2)
+			res, err1 = Add(solicitud, "solicitudes_crud", "solicitud", 2)
 		} else {
-			err1 = Update(solicitud.Id, solicitud, "solicitudes_crud", "solicitud", 2)
+			res, err1 = Update(solicitud.Id, solicitud, "solicitudes_crud", "solicitud", 2)
 		}
 		if err1 == nil {
 			solicitudAvance.SolicitudId = solicitud.Id
-			return nil
+			return res, nil
 		} else {
-			return Error(funcion, err1, "502")
+			return nil, Error(funcion, err1, "502")
 		}
 	}
-	return Error(funcion, errJSON, "400")
+	return nil, Error(funcion, errJSON, "400")
 }
 
-func EnviarSolicitante(solicitante *solicitudes_crud.Solicitante, solicitudAvance *models.SolicitudAvance, solicitud *solicitudes_crud.Solicitud) (err map[string]interface{}) {
+func EnviarSolicitante(solicitante *solicitudes_crud.Solicitante, solicitudAvance *models.SolicitudAvance, solicitud *solicitudes_crud.Solicitud) (res map[string]interface{}, err map[string]interface{}) {
 	funcion := "CrearSolicitante"
 	defer ErrorControlFunction(funcion, "502")
 	solicitante.TerceroId = solicitudAvance.TerceroId
@@ -210,18 +215,18 @@ func EnviarSolicitante(solicitante *solicitudes_crud.Solicitante, solicitudAvanc
 	solicitante.Activo = true
 	var err1 map[string]interface{}
 	if solicitante.Id == 0 {
-		err1 = Add(solicitante, "solicitudes_crud", "solicitante", 2)
+		res, err1 = Add(solicitante, "solicitudes_crud", "solicitante", 2)
 	} else {
-		err1 = Update(solicitante.Id, solicitante, "solicitudes_crud", "solicitante", 2)
+		res, err1 = Update(solicitante.Id, solicitante, "solicitudes_crud", "solicitante", 2)
 	}
 	if err1 == nil {
-		return nil
+		return res, nil
 	} else {
-		return Error(funcion, err1, "502")
+		return nil, Error(funcion, err1, "502")
 	}
 }
 
-func EnviarObservacion(observacion *solicitudes_crud.Observacion, solicitudAvance *models.SolicitudAvance, solicitud *solicitudes_crud.Solicitud, valor string, tipoObservacionId int, titulo string) (err map[string]interface{}) {
+func EnviarObservacion(observacion *solicitudes_crud.Observacion, solicitudAvance *models.SolicitudAvance, solicitud *solicitudes_crud.Solicitud, valor string, tipoObservacionId int, titulo string) (res map[string]interface{}, err map[string]interface{}) {
 	funcion := "EnviarObservacion"
 	defer ErrorControlFunction(funcion, "502")
 	tipoObservacion := solicitudes_crud.TipoObservacion{Id: tipoObservacionId}
@@ -233,25 +238,133 @@ func EnviarObservacion(observacion *solicitudes_crud.Observacion, solicitudAvanc
 	observacion.Activo = true
 	var err1 map[string]interface{}
 	if observacion.Id == 0 {
-		err1 = Add(observacion, "solicitudes_crud", "observacion", 2)
+		res, err1 = Add(observacion, "solicitudes_crud", "observacion", 2)
 	} else {
-		err1 = Update(observacion.Id, observacion, "solicitudes_crud", "observacion", 2)
+		res, err1 = Update(observacion.Id, observacion, "solicitudes_crud", "observacion", 2)
 	}
 	if err1 == nil {
-		return nil
+		return res, nil
 	} else {
-		return Error(funcion, err1, "502")
+		return nil, Error(funcion, err1, "502")
 	}
 }
 
-func EnviarSolicitudAvanceCrud(solicitud *avances_crud.SolicitudAvance) (err map[string]interface{}) {
+func EnviarSolicitudAvanceCrud(solicitud *avances_crud.SolicitudAvance) (res map[string]interface{}, err map[string]interface{}) {
 	funcion := "EnviarSolicitudAvanceCrud"
 	defer ErrorControlFunction(funcion, "502")
+	var err1 map[string]interface{}
 	if solicitud.Id == 0 {
-		return Add(solicitud, "avances_crud", "solicitud_avance", 2)
+		res, err1 = Add(solicitud, "avances_crud", "solicitud_avance", 2)
 	} else {
-		return Update(solicitud.Id, solicitud, "avances_crud", "solicitud_avance", 2)
+		res, err1 = Update(solicitud.Id, solicitud, "avances_crud", "solicitud_avance", 2)
 	}
+	if err1 == nil {
+		return res, nil
+	} else {
+		return nil, Error(funcion, err1, "502")
+	}
+}
+
+func EnviarSolicitudYEspecificacionTipoAvanceCrud(solicitudAvance *models.SolicitudAvance, res3 map[string]interface{}) (res map[string]interface{}, err map[string]interface{}) {
+	funcion := "EnviarSolicitudYEspecificacionTipoAvanceCrud"
+	defer ErrorControlFunction(funcion, "502")
+	//fmt.Println("Solicitud ", solicitudAvance)
+	//fmt.Println("res3 ", res3["Data"])
+	//fmt.Println("tipoAvance ", solicitudAvance.AvanceTotal[0].Id)
+	//fmt.Println("tipoAvanceLen ", len(solicitudAvance.AvanceTotal))
+	//resAux := map[string]interface{}
+	//resAux := res3["Data"]
+	solAvance := avances_crud.SolicitudAvance{}
+	errDecod := mapstructure.Decode(res3["Data"], &solAvance)
+	fmt.Println(errDecod)
+	solTipoAvance := avances_crud.SolicitudTipoAvance{}
+	//solEspecificacionesAvance := avances_crud.EspecificacionTipoAvance{}
+	solTipoAvance.SolicitudAvanceId = &solAvance
+	
+	//solAvance.SolicitudAvanceId = solicitudAvance.Id
+	for i := 0; i < len(solicitudAvance.AvanceTotal); i++ {
+
+	//------------  SOLICITUD TIPO AVANCE
+		solTipoAvance.TipoAvanceId = solicitudAvance.AvanceTotal[i]
+		//REVISAR DESCRIPCION
+		solTipoAvance.Descripcion = ""
+		jsonEspecificaciones, _ := json.Marshal(solicitudAvance.TipoAvance[i]["especificaciones"])
+		var especificaciones []map[string]interface{}
+		errJson := json.Unmarshal([]byte(jsonEspecificaciones), &especificaciones)
+		fmt.Println(errJson)
+		var valorTotal float64
+		for j := 0; j < len(especificaciones); j++ {
+			valorTotal += (especificaciones[j]["valor"]).(float64)
+		}
+		solTipoAvance.Valor = valorTotal
+		solTipoAvance.FechaCreacion = solAvance.FechaCreacion
+		solTipoAvance.FechaModificacion = solAvance.FechaModificacion
+		solTipoAvance.Activo = true
+
+	// ----------- POST
+		var err1 map[string]interface{}
+		if solTipoAvance.Id == 0 {
+			res, err1 = Add(solTipoAvance, "avances_crud", "solicitud_tipo_avance", 2)
+			fmt.Println("add")
+			if res5, err5 := EnviarSolicitudRequisitoTipoAvanceCrud(solicitudAvance, res, solTipoAvance.TipoAvanceId, i); err5 == nil && res5 != nil {
+				return nil, nil
+			}
+		} else {
+			// Falta update
+			fmt.Println("FALLO por id")
+			//res, err1 = Update(solicitud.Id, solicitud, "solicitudes_crud", "solicitud", 2)
+		}
+
+		/*if err1 == nil {
+			//solicitudAvance.SolicitudId = solicitud.Id
+			return res, err1
+		} else {
+			return nil, Error(funcion, err1, "502")
+		}*/
+		fmt.Println(err1)
+
+	}
+	return nil, nil
+}
+
+func EnviarSolicitudRequisitoTipoAvanceCrud(solicitudAvance *models.SolicitudAvance, res map[string]interface{}, solTipoAvanceId *avances_crud.TipoAvance, i int)(res5 map[string]interface{}, err map[string]interface{}) {
+	funcion := "EnviarSolicitudRequisitoTipoAvanceCrud"
+	defer ErrorControlFunction(funcion, "502")
+	solRequisitoTipoAvance := avances_crud.SolicitudRequisitoTipoAvance{}
+	solRequisito := avances_crud.SolicitudTipoAvance{}
+	errDecod := mapstructure.Decode(res["Data"], &solRequisito)
+	fmt.Println(errDecod)
+	solRequisitoTipoAvance.SolicitudTipoAvanceId = &solRequisito
+	jsonRequisitos, _ := json.Marshal(solicitudAvance.TipoAvance[i]["requisitos"])
+	var requisitos []map[string]interface{}
+	errJson := json.Unmarshal([]byte(jsonRequisitos), &requisitos)
+	fmt.Println(errJson)
+	for j := 0; j < len(requisitos); j++ {
+		fmt.Println("ENTRA AL FOR")
+		query := make(map[string]string)
+		query["TipoAvanceId"] = strconv.Itoa(solTipoAvanceId.Id)
+		fmt.Println("PASO")
+		//strconv.FormatFloat(input_num, 'f', -1, 64)
+		query["RequisitoAvanceId"] = strconv.FormatFloat((requisitos[j]["Id"]).(float64), 'f', -1, 64)
+		fmt.Println("query ", query)
+		var requisitoTipoAvance []avances_crud.RequisitoTipoAvance
+		
+		if err := GetAll(&requisitoTipoAvance, "avances_crud", "requisito_tipo_avance", 2,
+			query, nil, nil, nil, -1, -1); err == nil {
+			fmt.Println("RESPUESTA ", requisitoTipoAvance)
+			if len(requisitoTipoAvance) > 0 {
+				sol := requisitoTipoAvance[0]
+				fmt.Println("sol ", sol)
+				//return &sol, nil
+			} else {
+			return nil, Error(funcion, "No existe solicitante asociado", "502")
+			}
+		} else {
+			fmt.Println("ERROR ", err)
+		return nil, Error(funcion, err, "502")
+		}
+	}
+	return nil, nil
 }
 
 // Obtención

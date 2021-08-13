@@ -37,38 +37,38 @@ func ResultToStruct(resultado map[string]interface{}, element interface{}) (err 
 }
 
 // Send an json element
-func Send(element interface{}, url string, tipo string, v int, funcion string) (err map[string]interface{}) {
+func Send(element interface{}, url string, tipo string, v int, funcion string) (resultado map[string]interface{}, err map[string]interface{}) {
 	defer ErrorControlFunction(funcion, "502")
 	switch v {
 	case 1:
 		if error := request.SendJson(url, tipo, &element, element); error == nil {
-			return nil
+			return nil, nil
 		} else {
-			return Error(funcion, err, "502")
+			return nil, Error(funcion, err, "502")
 		}
 	case 2:
 		var resultado map[string]interface{}
 		if error := request.SendJson(url, tipo, &resultado, element); error == nil {
 			if err := ResultToStruct(resultado, &element); err == nil && element != nil {
-				return nil
+				return resultado, nil
 			} else {
-				return Error(funcion, err, "502")
+				return nil, Error(funcion, err, "502")
 			}
 		} else {
-			return Error(funcion, err, "502")
+			return nil, Error(funcion, err, "502")
 		}
 	default:
-		return Error(funcion, "No se reconoce v", "502")
+		return nil, Error(funcion, "No se reconoce v", "502")
 	}
 }
 
 // Add an element
-func Add(element interface{}, api string, endpoint string, v int) (err map[string]interface{}) {
+func Add(element interface{}, api string, endpoint string, v int) (resultado map[string]interface{}, err map[string]interface{}) {
 	return Send(element, beego.AppConfig.String(api)+endpoint, "POST", v, "Add")
 }
 
 // Update an element
-func Update(id int, element interface{}, api string, endpoint string, v int) (err map[string]interface{}) {
+func Update(id int, element interface{}, api string, endpoint string, v int) (resultado map[string]interface{}, err map[string]interface{}) {
 	return Send(element, beego.AppConfig.String(api)+endpoint+"/"+strconv.Itoa(id), "PUT", v, "Update")
 }
 
