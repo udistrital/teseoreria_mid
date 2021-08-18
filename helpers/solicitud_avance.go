@@ -276,7 +276,9 @@ func EnviarSolicitudYEspecificacionTipoAvanceCrud(solicitudAvance *models.Solici
 	//resAux := res3["Data"]
 	solAvance := avances_crud.SolicitudAvance{}
 	errDecod := mapstructure.Decode(res3["Data"], &solAvance)
-	fmt.Println(errDecod)
+	if errDecod != nil{
+		panic(errDecod)
+	}
 	solTipoAvance := avances_crud.SolicitudTipoAvance{}
 	//solEspecificacionesAvance := avances_crud.EspecificacionTipoAvance{}
 	solTipoAvance.SolicitudAvanceId = &solAvance
@@ -291,7 +293,9 @@ func EnviarSolicitudYEspecificacionTipoAvanceCrud(solicitudAvance *models.Solici
 		jsonEspecificaciones, _ := json.Marshal(solicitudAvance.TipoAvance[i]["especificaciones"])
 		var especificaciones []map[string]interface{}
 		errJson := json.Unmarshal([]byte(jsonEspecificaciones), &especificaciones)
-		fmt.Println(errJson)
+		if errJson != nil{
+			panic(errJson)
+		}
 		var valorTotal float64
 		for j := 0; j < len(especificaciones); j++ {
 			valorTotal += (especificaciones[j]["valor"]).(float64)
@@ -305,9 +309,14 @@ func EnviarSolicitudYEspecificacionTipoAvanceCrud(solicitudAvance *models.Solici
 		var err1 map[string]interface{}
 		if solTipoAvance.Id == 0 {
 			res, err1 = Add(solTipoAvance, "avances_crud", "solicitud_tipo_avance", 2)
-			fmt.Println("add")
-			if res5, err5 := EnviarSolicitudRequisitoTipoAvanceCrud(solicitudAvance, res, solTipoAvance.TipoAvanceId, i); err5 == nil && res5 != nil {
-				return nil, nil
+			if err1 == nil{
+				if res5, err5 := EnviarSolicitudRequisitoTipoAvanceCrud(solicitudAvance, res, solTipoAvance.TipoAvanceId, i); err5 == nil && res5 != nil {
+					return nil, nil
+				}else{
+					return nil, err5
+				}
+			} else{
+				return nil, err1
 			}
 		} else {
 			// Falta update
@@ -333,36 +342,49 @@ func EnviarSolicitudRequisitoTipoAvanceCrud(solicitudAvance *models.SolicitudAva
 	solRequisitoTipoAvance := avances_crud.SolicitudRequisitoTipoAvance{}
 	solRequisito := avances_crud.SolicitudTipoAvance{}
 	errDecod := mapstructure.Decode(res["Data"], &solRequisito)
-	fmt.Println(errDecod)
+	if errDecod != nil {
+		panic(errDecod)
+	}
 	solRequisitoTipoAvance.SolicitudTipoAvanceId = &solRequisito
 	jsonRequisitos, _ := json.Marshal(solicitudAvance.TipoAvance[i]["requisitos"])
 	var requisitos []map[string]interface{}
 	errJson := json.Unmarshal([]byte(jsonRequisitos), &requisitos)
-	fmt.Println(errJson)
+	if errJson != nil {
+		panic(errJson)
+	}
 	for j := 0; j < len(requisitos); j++ {
-		fmt.Println("ENTRA AL FOR")
 		query := make(map[string]string)
 		query["TipoAvanceId"] = strconv.Itoa(solTipoAvanceId.Id)
-		fmt.Println("PASO")
-		//strconv.FormatFloat(input_num, 'f', -1, 64)
 		query["RequisitoAvanceId"] = strconv.FormatFloat((requisitos[j]["Id"]).(float64), 'f', -1, 64)
-		fmt.Println("query ", query)
+
 		var requisitoTipoAvance []avances_crud.RequisitoTipoAvance
-		
 		if err := GetAll(&requisitoTipoAvance, "avances_crud", "requisito_tipo_avance", 2,
 			query, nil, nil, nil, -1, -1); err == nil {
-			fmt.Println("RESPUESTA ", requisitoTipoAvance)
 			if len(requisitoTipoAvance) > 0 {
 				sol := requisitoTipoAvance[0]
-				fmt.Println("sol ", sol)
+				solRequisitoTipoAvance.RequisitoTipoAvanceId = &sol
 				//return &sol, nil
 			} else {
 			return nil, Error(funcion, "No existe solicitante asociado", "502")
 			}
 		} else {
-			fmt.Println("ERROR ", err)
-		return nil, Error(funcion, err, "502")
+			return nil, Error(funcion, err, "502")
 		}
+		solRequisitoTipoAvance.Observaciones = ""
+		solRequisitoTipoAvance.Documento = fmt.Sprintf("%g", requisitos[j]["idDocumento"].(float64))
+		solRequisitoTipoAvance.Activo = true
+	
+
+		var err1 map[string]interface{}
+		if solRequisitoTipoAvance.Id == 0 {
+			res, err1 = Add(solRequisitoTipoAvance, "avances_crud", "solicitud_requisito_tipo_avance", 2)
+			fmt.Println("res ", res)
+		} else {
+			// Falta update
+			fmt.Println("FALLO por id")
+			//res, err1 = Update(solicitud.Id, solicitud, "solicitudes_crud", "solicitud", 2)
+		}
+		fmt.Println(err1)
 	}
 	return nil, nil
 }
