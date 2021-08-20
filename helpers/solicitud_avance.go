@@ -277,7 +277,7 @@ func EnviarSolicitudYEspecificacionTipoAvanceCrud(solicitudAvance *models.Solici
 	solAvance := avances_crud.SolicitudAvance{}
 	errDecod := mapstructure.Decode(res3["Data"], &solAvance)
 	if errDecod != nil{
-		panic(errDecod)
+		return nil, Error(funcion, "Sintaxis incorrecta de solAvance", "400")
 	}
 	solTipoAvance := avances_crud.SolicitudTipoAvance{}
 	//solEspecificacionesAvance := avances_crud.EspecificacionTipoAvance{}
@@ -294,7 +294,7 @@ func EnviarSolicitudYEspecificacionTipoAvanceCrud(solicitudAvance *models.Solici
 		var especificaciones []map[string]interface{}
 		errJson := json.Unmarshal([]byte(jsonEspecificaciones), &especificaciones)
 		if errJson != nil{
-			panic(errJson)
+			return nil, Error(funcion, "Error en la conversión del json", "400")
 		}
 		var valorTotal float64
 		for j := 0; j < len(especificaciones); j++ {
@@ -343,14 +343,14 @@ func EnviarSolicitudRequisitoTipoAvanceCrud(solicitudAvance *models.SolicitudAva
 	solRequisito := avances_crud.SolicitudTipoAvance{}
 	errDecod := mapstructure.Decode(res["Data"], &solRequisito)
 	if errDecod != nil {
-		panic(errDecod)
+		return nil, Error(funcion, "Sintaxis incorrecta de solRequisito", "400")
 	}
 	solRequisitoTipoAvance.SolicitudTipoAvanceId = &solRequisito
 	jsonRequisitos, _ := json.Marshal(solicitudAvance.TipoAvance[i]["requisitos"])
 	var requisitos []map[string]interface{}
 	errJson := json.Unmarshal([]byte(jsonRequisitos), &requisitos)
 	if errJson != nil {
-		panic(errJson)
+		return nil, Error(funcion, "Error en la decodificación del JSON", "400")
 	}
 	for j := 0; j < len(requisitos); j++ {
 		query := make(map[string]string)
