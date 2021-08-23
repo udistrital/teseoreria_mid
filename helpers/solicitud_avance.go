@@ -22,19 +22,19 @@ func CrearSolicitudAvance(solicitudAvance *models.SolicitudAvance) (sol *models.
 	solicitud := solicitudes_crud.Solicitud{}
 	if res1, err1 := EnviarSolicitudCrud(&solicitud, solicitudAvance); err1 == nil && res1 != nil {
 		// Guardar el solicitante
-		if res2, err2 := EnviarSolicitante(&solicitudes_crud.Solicitante{},
-			solicitudAvance, &solicitud); err2 != nil && res2 != nil {
+		if _, err2 := EnviarSolicitante(&solicitudes_crud.Solicitante{},
+			solicitudAvance, &solicitud); err2 != nil {
 			return nil, err2
 		}
 		// Guardar objetivo y justificacion (observaciones)
-		if resObj, errObj := EnviarObservacion(&solicitudes_crud.Observacion{},
+		if _, errObj := EnviarObservacion(&solicitudes_crud.Observacion{},
 			solicitudAvance, &solicitud, solicitudAvance.Objetivo,
-			5, "Objetivo"); errObj != nil && resObj != nil {
+			5, "Objetivo"); errObj != nil {
 			return nil, errObj
 		}
-		if resJust, errJust := EnviarObservacion(&solicitudes_crud.Observacion{},
+		if _, errJust := EnviarObservacion(&solicitudes_crud.Observacion{},
 			solicitudAvance, &solicitud, solicitudAvance.Justificacion,
-			6, "Justificación"); errJust != nil && resJust != nil {
+			6, "Justificación"); errJust != nil {
 			return nil, errJust
 		}
 		// Guardado en avances_crud
@@ -69,15 +69,14 @@ func ActualizarSolicitudAvance(solicitudAvance *models.SolicitudAvance) (err map
 		// Actualizacion en solicitudes_crud
 		solicitud := solicitudes_crud.Solicitud{
 			Id: solicitudAvance.SolicitudId, FechaCreacion: solicitudAvance.FechaCreacion}
-		if res, err := EnviarSolicitudCrud(&solicitud, solicitudAvance); err != nil  && res != nil{
+		if _, err := EnviarSolicitudCrud(&solicitud, solicitudAvance); err != nil {
 			return err
 		}
 		// Guardar el solicitante
 		if solicitante, err := ObtenerSolicitantePorSolicitudId(solicitudAvance.SolicitudId, nil); err == nil {
-			var res map[string]interface{}
-			if res, err = EnviarSolicitante(&solicitudes_crud.Solicitante{
+			if _, err = EnviarSolicitante(&solicitudes_crud.Solicitante{
 				Id: solicitante.Id, FechaCreacion: solicitante.FechaCreacion},
-				solicitudAvance, &solicitud); err != nil && res != nil {
+				solicitudAvance, &solicitud); err != nil {
 				return err
 			}
 		} else {
@@ -85,9 +84,9 @@ func ActualizarSolicitudAvance(solicitudAvance *models.SolicitudAvance) (err map
 		}
 		// Guardar objetivo
 		if obj, err := ObtenerObjetivoPorSolicitudId(solicitudAvance.SolicitudId, nil); err == nil {
-			if resObj, errObj := EnviarObservacion(&solicitudes_crud.Observacion{
+			if _, errObj := EnviarObservacion(&solicitudes_crud.Observacion{
 				Id: obj.Id, FechaCreacion: obj.FechaCreacion},
-				solicitudAvance, &solicitud, solicitudAvance.Objetivo, 5, "Objetivo"); errObj != nil  && resObj != nil{
+				solicitudAvance, &solicitud, solicitudAvance.Objetivo, 5, "Objetivo"); errObj != nil {
 				return errObj
 			}
 		} else {
@@ -95,9 +94,9 @@ func ActualizarSolicitudAvance(solicitudAvance *models.SolicitudAvance) (err map
 		}
 		// Guardar justificación
 		if just, err := ObtenerJustificacionPorSolicitudId(solicitudAvance.SolicitudId, nil); err == nil {
-			if resJust, errJust := EnviarObservacion(&solicitudes_crud.Observacion{
+			if _, errJust := EnviarObservacion(&solicitudes_crud.Observacion{
 				Id: just.Id, FechaCreacion: just.FechaCreacion},
-				solicitudAvance, &solicitud, solicitudAvance.Justificacion, 6, "Justificación"); errJust != nil && resJust != nil {
+				solicitudAvance, &solicitud, solicitudAvance.Justificacion, 6, "Justificación"); errJust != nil {
 				return errJust
 			}
 		} else {
@@ -339,14 +338,14 @@ func EnviarSolicitudRequisitoTipoAvanceCrud(solicitudAvance *models.SolicitudAva
 	solRequisito := avances_crud.SolicitudTipoAvance{}
 	errDecod := mapstructure.Decode(res["Data"], &solRequisito)
 	if errDecod != nil {
-		return nil, Error(funcion, "Sintaxis incorrecta de solRequisito", "400")
+		return nil, Error(funcion, fmt.Sprintf("Error: %v", errDecod), "400")
 	}
 	solRequisitoTipoAvance.SolicitudTipoAvanceId = &solRequisito
 	jsonRequisitos, _ := json.Marshal(solicitudAvance.TipoAvance[i]["requisitos"])
 	var requisitos []map[string]interface{}
 	errJson := json.Unmarshal([]byte(jsonRequisitos), &requisitos)
 	if errJson != nil {
-		return nil, Error(funcion, "Error en la decodificación del JSON", "400")
+		return nil, Error(funcion, fmt.Sprintf("Error: %v", errJson), "400")
 	}
 	for j := 0; j < len(requisitos); j++ {
 		query := make(map[string]string)
@@ -360,7 +359,7 @@ func EnviarSolicitudRequisitoTipoAvanceCrud(solicitudAvance *models.SolicitudAva
 				solRequisitoTipoAvance.RequisitoTipoAvanceId = &sol
 				//return &sol, nil
 			} else {
-			return nil, Error(funcion, "No existe solicitante asociado", "502")
+			return nil, Error(funcion, "No existe solicitante asociado", "204")
 			}
 		} else {
 			return nil, err
@@ -477,7 +476,7 @@ func SetSolicitudAvancePorSolicitante(sol *solicitudes_crud.Solicitante, solicit
 
 func ObtenerObjetivoPorSolicitudId(id int, solicitudAvance *models.SolicitudAvance) (observacion *solicitudes_crud.Observacion, err map[string]interface{}) {
 	funcion := "ObtenerObjetivoPorSolicitudId"
-	defer ErrorControlFunction(funcion, "5000")
+	defer ErrorControlFunction(funcion, "500")
 	o, e := ObtenerObservacionPorSolicitudId(id, 5, solicitudAvance)
 	if e == nil && solicitudAvance != nil && o != nil {
 		solicitudAvance.Objetivo = o.Valor

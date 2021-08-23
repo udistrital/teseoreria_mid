@@ -56,7 +56,7 @@ func Send(element interface{}, url string, tipo string, v int, funcion string) (
 				return nil, err
 			}
 		} else {
-			return nil, Error(funcion, error, "400")
+			return nil, Error(funcion, error, "502")
 		}
 	default:
 		return nil, Error(funcion, "No se reconoce v", "400")
