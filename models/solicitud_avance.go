@@ -2,6 +2,7 @@ package models
 
 import (
 	solicitudes_crud "github.com/udistrital/solicitudes_crud/models"
+	avances_crud "github.com/udistrital/avances_crud/models"
 )
 
 type SolicitudAvance struct {
@@ -26,4 +27,6 @@ type SolicitudAvance struct {
 	FechaCreacion         string `orm:"column(fecha_creacion);type(timestamp without time zone)"`
 	FechaModificacion     string `orm:"column(fecha_modificacion);type(timestamp without time zone)"`
 	Activo                bool   `orm:"column(activo)"`
+	AvanceTotal			  []*avances_crud.TipoAvance
+	TipoAvance			  []map[string]interface{}
 }

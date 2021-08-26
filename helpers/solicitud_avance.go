@@ -3,8 +3,11 @@ package helpers
 import (
 	"encoding/json"
 	"strconv"
-
+	"fmt"
+	mapstructure "github.com/mitchellh/mapstructure"
 	"github.com/udistrital/tesoreria_mid/models"
+	"github.com/astaxie/beego/logs"
+
 
 	avances_crud "github.com/udistrital/avances_crud/models"
 	solicitudes_crud "github.com/udistrital/solicitudes_crud/models"
@@ -13,47 +16,51 @@ import (
 // Crea una solicitud de avance
 func CrearSolicitudAvance(solicitudAvance *models.SolicitudAvance) (sol *models.SolicitudAvance, err map[string]interface{}) {
 	funcion := "CrearSolicitudAvance"
-	defer ErrorControlFunction(funcion, "502")
+	defer ErrorControlFunction(funcion, "500")
 	// Guardado en solicitudes_crud
 	solicitudAvance.Id = 0
 	solicitud := solicitudes_crud.Solicitud{}
-	if err1 := EnviarSolicitudCrud(&solicitud, solicitudAvance); err1 == nil {
+	if res1, err1 := EnviarSolicitudCrud(&solicitud, solicitudAvance); err1 == nil && res1 != nil {
 		// Guardar el solicitante
-		if err2 := EnviarSolicitante(&solicitudes_crud.Solicitante{},
+		if _, err2 := EnviarSolicitante(&solicitudes_crud.Solicitante{},
 			solicitudAvance, &solicitud); err2 != nil {
-			return nil, Error(funcion, err2, "502")
+			return nil, err2
 		}
 		// Guardar objetivo y justificacion (observaciones)
-		if errObj := EnviarObservacion(&solicitudes_crud.Observacion{},
+		if _, errObj := EnviarObservacion(&solicitudes_crud.Observacion{},
 			solicitudAvance, &solicitud, solicitudAvance.Objetivo,
 			5, "Objetivo"); errObj != nil {
-			return nil, Error(funcion, errObj, "502")
+			return nil, errObj
 		}
-		if errJust := EnviarObservacion(&solicitudes_crud.Observacion{},
+		if _, errJust := EnviarObservacion(&solicitudes_crud.Observacion{},
 			solicitudAvance, &solicitud, solicitudAvance.Justificacion,
 			6, "Justificación"); errJust != nil {
-			return nil, Error(funcion, errJust, "502")
+			return nil, errJust
 		}
 		// Guardado en avances_crud
 		solicitudAvanceCrud := avances_crud.SolicitudAvance{
 			SolicitudId: solicitud.Id, Activo: true}
-		if err3 := EnviarSolicitudAvanceCrud(&solicitudAvanceCrud); err3 == nil {
+		if res3, err3 := EnviarSolicitudAvanceCrud(&solicitudAvanceCrud); err3 == nil && res3 != nil {
 			solicitudAvance.Id = solicitudAvanceCrud.Id
 			solicitudAvance.FechaCreacion = solicitudAvanceCrud.FechaCreacion
 			solicitudAvance.FechaModificacion = solicitudAvanceCrud.FechaCreacion
-			return solicitudAvance, nil
+			if _, err4 := EnviarSolicitudYEspecificacionTipoAvanceCrud(solicitudAvance, res3); err4 == nil{
+				return solicitudAvance, nil
+			}else{
+				return nil, err4
+			}
 		} else {
-			return nil, Error(funcion, err3, "502")
+			return nil, err3
 		}
 	} else {
-		return nil, Error(funcion, err1, "502")
+		return nil, err1
 	}
 }
 
 // Actualiza una solicitud de avance
 func ActualizarSolicitudAvance(solicitudAvance *models.SolicitudAvance) (err map[string]interface{}) {
 	funcion := "ActualizarSolicitudAvance"
-	defer ErrorControlFunction(funcion, "502")
+	defer ErrorControlFunction(funcion, "500")
 	// Consulta en avances_crud
 	if solAvanceCrud, err := ObtenerSolicitudAvanceCrudPorId(solicitudAvance.Id, nil); err == nil {
 		solicitudAvance.Id = solAvanceCrud.Id
@@ -62,79 +69,79 @@ func ActualizarSolicitudAvance(solicitudAvance *models.SolicitudAvance) (err map
 		// Actualizacion en solicitudes_crud
 		solicitud := solicitudes_crud.Solicitud{
 			Id: solicitudAvance.SolicitudId, FechaCreacion: solicitudAvance.FechaCreacion}
-		if err := EnviarSolicitudCrud(&solicitud, solicitudAvance); err != nil {
-			return Error(funcion, err, "502")
+		if _, err := EnviarSolicitudCrud(&solicitud, solicitudAvance); err != nil {
+			return err
 		}
 		// Guardar el solicitante
 		if solicitante, err := ObtenerSolicitantePorSolicitudId(solicitudAvance.SolicitudId, nil); err == nil {
-			if err = EnviarSolicitante(&solicitudes_crud.Solicitante{
+			if _, err = EnviarSolicitante(&solicitudes_crud.Solicitante{
 				Id: solicitante.Id, FechaCreacion: solicitante.FechaCreacion},
 				solicitudAvance, &solicitud); err != nil {
-				return Error(funcion, err, "502")
+				return err
 			}
 		} else {
-			return Error(funcion, err, "502")
+			return err
 		}
 		// Guardar objetivo
 		if obj, err := ObtenerObjetivoPorSolicitudId(solicitudAvance.SolicitudId, nil); err == nil {
-			if errObj := EnviarObservacion(&solicitudes_crud.Observacion{
+			if _, errObj := EnviarObservacion(&solicitudes_crud.Observacion{
 				Id: obj.Id, FechaCreacion: obj.FechaCreacion},
 				solicitudAvance, &solicitud, solicitudAvance.Objetivo, 5, "Objetivo"); errObj != nil {
-				return Error(funcion, errObj, "502")
+				return errObj
 			}
 		} else {
-			return Error(funcion, err, "502")
+			return err
 		}
 		// Guardar justificación
 		if just, err := ObtenerJustificacionPorSolicitudId(solicitudAvance.SolicitudId, nil); err == nil {
-			if errJust := EnviarObservacion(&solicitudes_crud.Observacion{
+			if _, errJust := EnviarObservacion(&solicitudes_crud.Observacion{
 				Id: just.Id, FechaCreacion: just.FechaCreacion},
 				solicitudAvance, &solicitud, solicitudAvance.Justificacion, 6, "Justificación"); errJust != nil {
-				return Error(funcion, errJust, "502")
+				return errJust
 			}
 		} else {
-			return Error(funcion, err, "502")
+			return err
 		}
 		return nil
 	} else {
-		return Error(funcion, err, "502")
+		return err
 	}
 }
 
 // Obtiene una solicitud de avance buscando por Id
 func ObtenerSolicitudAvancePorId(id int) (sol *models.SolicitudAvance, err map[string]interface{}) {
 	funcion := "ObtenerSolicitudAvancePorId"
-	defer ErrorControlFunction(funcion, "502")
+	defer ErrorControlFunction(funcion, "500")
 	solicitudAvance := models.SolicitudAvance{}
 	// Consulta en avances_crud
 	if _, err := ObtenerSolicitudAvanceCrudPorId(id, &solicitudAvance); err == nil {
 		// Consulta en solicitudes_crud
 		_, err := ObtenerSolicitudPorId(solicitudAvance.SolicitudId, &solicitudAvance)
 		if err != nil {
-			return nil, Error(funcion, err, "502")
+			return nil, err
 		}
 		_, err = ObtenerSolicitantePorSolicitudId(solicitudAvance.SolicitudId, &solicitudAvance)
 		if err != nil {
-			return nil, Error(funcion, err, "502")
+			return nil, err
 		}
 		_, err = ObtenerObjetivoPorSolicitudId(solicitudAvance.SolicitudId, &solicitudAvance)
 		if err != nil {
-			return nil, Error(funcion, err, "502")
+			return nil, err
 		}
 		_, err = ObtenerJustificacionPorSolicitudId(solicitudAvance.SolicitudId, &solicitudAvance)
 		if err != nil {
-			return nil, Error(funcion, err, "502")
+			return nil, err
 		}
 		return &solicitudAvance, nil
 	} else {
-		return nil, Error(funcion, err, "502")
+		return nil, err
 	}
 }
 
 // Obtiene múltiples solicitudes de avance
 func ObtenerSolicitudesAvance(limit int, offset int) (solicitudes []models.SolicitudAvance, err map[string]interface{}) {
 	funcion := "ObtenerSolicitudesAvance"
-	defer ErrorControlFunction(funcion, "502")
+	defer ErrorControlFunction(funcion, "500")
 	var solsAvance []avances_crud.SolicitudAvance
 	if err := GetAll(&solsAvance, "avances_crud", "solicitud_avance", 2, nil, nil, nil, nil, limit, offset); err == nil {
 		solicitudes := make([]models.SolicitudAvance, len(solsAvance))
@@ -142,13 +149,13 @@ func ObtenerSolicitudesAvance(limit int, offset int) (solicitudes []models.Solic
 		query["TipoSolicitud"] = "5"
 		var estadosTipo []solicitudes_crud.EstadoTipoSolicitud
 		if err := GetAll(&estadosTipo, "solicitudes_crud", "estado_tipo_solicitud", 2, query, nil, nil, nil, 0, -1); err != nil {
-			return nil, Error(funcion, err, "502")
+			return nil, err
 		}
 		for i, solAvance := range solsAvance {
 			soli := models.SolicitudAvance{}
 			SetSolicitudAvancePorSolicitudAvanceCrud(&solAvance, &soli)
 			if _, err := ObtenerSolicitudPorId(solAvance.SolicitudId, &soli); err != nil {
-				return nil, Error(funcion, err, "502")
+				return nil, err
 			}
 			for _, estadoTipo := range estadosTipo {
 				if soli.EstadoTipoSolicitud.Id == estadoTipo.Id {
@@ -159,15 +166,15 @@ func ObtenerSolicitudesAvance(limit int, offset int) (solicitudes []models.Solic
 		}
 		return solicitudes, nil
 	} else {
-		return nil, Error(funcion, err, "502")
+		return nil, err
 	}
 }
 
 // Envío
 
-func EnviarSolicitudCrud(solicitud *solicitudes_crud.Solicitud, solicitudAvance *models.SolicitudAvance) (err map[string]interface{}) {
+func EnviarSolicitudCrud(solicitud *solicitudes_crud.Solicitud, solicitudAvance *models.SolicitudAvance) (res map[string]interface{}, err map[string]interface{}) {
 	funcion := "EnviarSolicitudCrud"
-	defer ErrorControlFunction(funcion, "502")
+	defer ErrorControlFunction(funcion, "500")
 	referencia, errJSON := json.Marshal(map[string]interface{}{
 		"VigenciaId":            solicitudAvance.VigenciaId,
 		"AreaFuncionalId":       solicitudAvance.AreaFuncionalId,
@@ -188,42 +195,42 @@ func EnviarSolicitudCrud(solicitud *solicitudes_crud.Solicitud, solicitudAvance 
 		solicitud.Activo = solicitudAvance.Activo
 		var err1 map[string]interface{}
 		if solicitud.Id == 0 {
-			err1 = Add(solicitud, "solicitudes_crud", "solicitud", 2)
+			res, err1 = Add(solicitud, "solicitudes_crud", "solicitud", 2)
 		} else {
-			err1 = Update(solicitud.Id, solicitud, "solicitudes_crud", "solicitud", 2)
+			res, err1 = Update(solicitud.Id, solicitud, "solicitudes_crud", "solicitud", 2)
 		}
 		if err1 == nil {
 			solicitudAvance.SolicitudId = solicitud.Id
-			return nil
+			return res, nil
 		} else {
-			return Error(funcion, err1, "502")
+			return nil, err1
 		}
 	}
-	return Error(funcion, errJSON, "400")
+	return nil, err
 }
 
-func EnviarSolicitante(solicitante *solicitudes_crud.Solicitante, solicitudAvance *models.SolicitudAvance, solicitud *solicitudes_crud.Solicitud) (err map[string]interface{}) {
+func EnviarSolicitante(solicitante *solicitudes_crud.Solicitante, solicitudAvance *models.SolicitudAvance, solicitud *solicitudes_crud.Solicitud) (res map[string]interface{}, err map[string]interface{}) {
 	funcion := "CrearSolicitante"
-	defer ErrorControlFunction(funcion, "502")
+	defer ErrorControlFunction(funcion, "500")
 	solicitante.TerceroId = solicitudAvance.TerceroId
 	solicitante.SolicitudId = solicitud
 	solicitante.Activo = true
 	var err1 map[string]interface{}
 	if solicitante.Id == 0 {
-		err1 = Add(solicitante, "solicitudes_crud", "solicitante", 2)
+		res, err1 = Add(solicitante, "solicitudes_crud", "solicitante", 2)
 	} else {
-		err1 = Update(solicitante.Id, solicitante, "solicitudes_crud", "solicitante", 2)
+		res, err1 = Update(solicitante.Id, solicitante, "solicitudes_crud", "solicitante", 2)
 	}
 	if err1 == nil {
-		return nil
+		return res, nil
 	} else {
-		return Error(funcion, err1, "502")
+		return nil, err1
 	}
 }
 
-func EnviarObservacion(observacion *solicitudes_crud.Observacion, solicitudAvance *models.SolicitudAvance, solicitud *solicitudes_crud.Solicitud, valor string, tipoObservacionId int, titulo string) (err map[string]interface{}) {
+func EnviarObservacion(observacion *solicitudes_crud.Observacion, solicitudAvance *models.SolicitudAvance, solicitud *solicitudes_crud.Solicitud, valor string, tipoObservacionId int, titulo string) (res map[string]interface{}, err map[string]interface{}) {
 	funcion := "EnviarObservacion"
-	defer ErrorControlFunction(funcion, "502")
+	defer ErrorControlFunction(funcion, "500")
 	tipoObservacion := solicitudes_crud.TipoObservacion{Id: tipoObservacionId}
 	observacion.TipoObservacionId = &tipoObservacion
 	observacion.SolicitudId = solicitud
@@ -233,45 +240,167 @@ func EnviarObservacion(observacion *solicitudes_crud.Observacion, solicitudAvanc
 	observacion.Activo = true
 	var err1 map[string]interface{}
 	if observacion.Id == 0 {
-		err1 = Add(observacion, "solicitudes_crud", "observacion", 2)
+		res, err1 = Add(observacion, "solicitudes_crud", "observacion", 2)
 	} else {
-		err1 = Update(observacion.Id, observacion, "solicitudes_crud", "observacion", 2)
+		res, err1 = Update(observacion.Id, observacion, "solicitudes_crud", "observacion", 2)
 	}
 	if err1 == nil {
-		return nil
+		return res, nil
 	} else {
-		return Error(funcion, err1, "502")
+		return nil, err1
 	}
 }
 
-func EnviarSolicitudAvanceCrud(solicitud *avances_crud.SolicitudAvance) (err map[string]interface{}) {
+func EnviarSolicitudAvanceCrud(solicitud *avances_crud.SolicitudAvance) (res map[string]interface{}, err map[string]interface{}) {
 	funcion := "EnviarSolicitudAvanceCrud"
-	defer ErrorControlFunction(funcion, "502")
+	defer ErrorControlFunction(funcion, "500")
+	var err1 map[string]interface{}
 	if solicitud.Id == 0 {
-		return Add(solicitud, "avances_crud", "solicitud_avance", 2)
+		res, err1 = Add(solicitud, "avances_crud", "solicitud_avance", 2)
 	} else {
-		return Update(solicitud.Id, solicitud, "avances_crud", "solicitud_avance", 2)
+		res, err1 = Update(solicitud.Id, solicitud, "avances_crud", "solicitud_avance", 2)
 	}
+	if err1 == nil {
+		return res, nil
+	} else {
+		return nil, err1
+	}
+}
+
+func EnviarSolicitudYEspecificacionTipoAvanceCrud(solicitudAvance *models.SolicitudAvance, res3 map[string]interface{}) (res map[string]interface{}, err map[string]interface{}) {
+	funcion := "EnviarSolicitudYEspecificacionTipoAvanceCrud"
+	defer ErrorControlFunction(funcion, "500")
+	solAvance := avances_crud.SolicitudAvance{}
+	errDecod := mapstructure.Decode(res3["Data"], &solAvance)
+	if errDecod != nil{
+		return nil, Error(funcion, "Sintaxis incorrecta de solAvance", "400")
+	}
+	solTipoAvance := avances_crud.SolicitudTipoAvance{}
+	//solEspecificacionesAvance := avances_crud.EspecificacionTipoAvance{}
+	solTipoAvance.SolicitudAvanceId = &solAvance
+	
+	//solAvance.SolicitudAvanceId = solicitudAvance.Id
+	for i := 0; i < len(solicitudAvance.AvanceTotal); i++ {
+
+	//------------  SOLICITUD TIPO AVANCE
+		solTipoAvance.TipoAvanceId = solicitudAvance.AvanceTotal[i]
+		//REVISAR DESCRIPCION
+		solTipoAvance.Descripcion = ""
+		jsonEspecificaciones, _ := json.Marshal(solicitudAvance.TipoAvance[i]["especificaciones"])
+		var especificaciones []map[string]interface{}
+		errJson := json.Unmarshal([]byte(jsonEspecificaciones), &especificaciones)
+		if errJson != nil{
+			return nil, Error(funcion, "Error en la conversión del json", "400")
+		}
+		var valorTotal float64
+		for j := 0; j < len(especificaciones); j++ {
+			valorTotal += (especificaciones[j]["valor"]).(float64)
+		}
+		solTipoAvance.Valor = valorTotal
+		solTipoAvance.FechaCreacion = solAvance.FechaCreacion
+		solTipoAvance.FechaModificacion = solAvance.FechaModificacion
+		solTipoAvance.Activo = true
+
+	// ----------- POST
+		var err1 map[string]interface{}
+		if solTipoAvance.Id == 0 {
+			res, err1 = Add(solTipoAvance, "avances_crud", "solicitud_tipo_avance", 2)
+			if err1 == nil{
+				if _, err5 := EnviarSolicitudRequisitoTipoAvanceCrud(solicitudAvance, res, solTipoAvance.TipoAvanceId, i); err5 == nil{
+					return nil, nil
+				}else{
+					return nil, err5
+				}
+			} else{
+				return nil, err1
+			}
+		} else {
+			// Falta update
+			logs.Error("Falló por id")
+			//res, err1 = Update(solicitud.Id, solicitud, "solicitudes_crud", "solicitud", 2)
+		}
+
+		/*if err1 == nil {
+			//solicitudAvance.SolicitudId = solicitud.Id
+			return res, err1
+		} else {
+			return nil, Error(funcion, err1, "502")
+		}*/
+
+	}
+	return nil, nil
+}
+
+func EnviarSolicitudRequisitoTipoAvanceCrud(solicitudAvance *models.SolicitudAvance, res map[string]interface{}, solTipoAvanceId *avances_crud.TipoAvance, i int)(res5 map[string]interface{}, err map[string]interface{}) {
+	funcion := "EnviarSolicitudRequisitoTipoAvanceCrud"
+	defer ErrorControlFunction(funcion, "500")
+	solRequisitoTipoAvance := avances_crud.SolicitudRequisitoTipoAvance{}
+	solRequisito := avances_crud.SolicitudTipoAvance{}
+	errDecod := mapstructure.Decode(res["Data"], &solRequisito)
+	if errDecod != nil {
+		return nil, Error(funcion, fmt.Sprintf("Error: %v", errDecod), "400")
+	}
+	solRequisitoTipoAvance.SolicitudTipoAvanceId = &solRequisito
+	jsonRequisitos, _ := json.Marshal(solicitudAvance.TipoAvance[i]["requisitos"])
+	var requisitos []map[string]interface{}
+	errJson := json.Unmarshal([]byte(jsonRequisitos), &requisitos)
+	if errJson != nil {
+		return nil, Error(funcion, fmt.Sprintf("Error: %v", errJson), "400")
+	}
+	for j := 0; j < len(requisitos); j++ {
+		query := make(map[string]string)
+		query["TipoAvanceId"] = strconv.Itoa(solTipoAvanceId.Id)
+		query["RequisitoAvanceId"] = strconv.FormatFloat((requisitos[j]["Id"]).(float64), 'f', -1, 64)
+		var requisitoTipoAvance []avances_crud.RequisitoTipoAvance
+		if err := GetAll(&requisitoTipoAvance, "avances_crud", "requisito_tipo_avance", 2,
+			query, nil, nil, nil, -1, -1); err == nil {
+			if len(requisitoTipoAvance) > 0 {
+				sol := requisitoTipoAvance[0]
+				solRequisitoTipoAvance.RequisitoTipoAvanceId = &sol
+				//return &sol, nil
+			} else {
+			return nil, Error(funcion, "No existe solicitante asociado", "204")
+			}
+		} else {
+			return nil, err
+		}
+		solRequisitoTipoAvance.Observaciones = ""
+		solRequisitoTipoAvance.Documento = fmt.Sprintf("%g", requisitos[j]["idDocumento"].(float64))
+		solRequisitoTipoAvance.Activo = true
+	
+		var err1 map[string]interface{}
+		if solRequisitoTipoAvance.Id == 0 {
+			res, err1 = Add(solRequisitoTipoAvance, "avances_crud", "solicitud_requisito_tipo_avance", 2)
+			if err1 != nil{
+				return nil, err1
+			}
+		} else {
+			// Falta update
+			logs.Error("FALLO por id")
+			//res, err1 = Update(solicitud.Id, solicitud, "solicitudes_crud", "solicitud", 2)
+		}
+	}
+	return nil, nil
 }
 
 // Obtención
 
 func ObtenerSolicitudAvanceCrudPorId(id int, solicitudAvance *models.SolicitudAvance) (sol *avances_crud.SolicitudAvance, err map[string]interface{}) {
 	funcion := "ObtenerSolicitudAvanceCrudPorId"
-	defer ErrorControlFunction(funcion, "502")
+	defer ErrorControlFunction(funcion, "500")
 	var solicitudAvanceCrud *avances_crud.SolicitudAvance
 	if err := GetById(id, &solicitudAvanceCrud, "avances_crud", "solicitud_avance",
 		2); err == nil && solicitudAvanceCrud != nil {
 		SetSolicitudAvancePorSolicitudAvanceCrud(solicitudAvanceCrud, solicitudAvance)
 		return solicitudAvanceCrud, nil
 	} else {
-		return nil, Error(funcion, err, "502")
+		return nil, err
 	}
 }
 
 func SetSolicitudAvancePorSolicitudAvanceCrud(solicitudAvanceCrud *avances_crud.SolicitudAvance, solicitudAvance *models.SolicitudAvance) {
 	funcion := "SetSolicitudAvancePorSolicitudAvanceCrud"
-	defer ErrorControlFunction(funcion, "502")
+	defer ErrorControlFunction(funcion, "500")
 	if solicitudAvance != nil {
 		solicitudAvance.Id = solicitudAvanceCrud.Id
 		solicitudAvance.SolicitudId = solicitudAvanceCrud.SolicitudId
@@ -283,20 +412,20 @@ func SetSolicitudAvancePorSolicitudAvanceCrud(solicitudAvanceCrud *avances_crud.
 
 func ObtenerSolicitudPorId(id int, solicitudAvance *models.SolicitudAvance) (sol *solicitudes_crud.Solicitud, err map[string]interface{}) {
 	funcion := "ObtenerSolicitudPorId"
-	defer ErrorControlFunction(funcion, "502")
+	defer ErrorControlFunction(funcion, "500")
 	var solicitudAvanceCrud *solicitudes_crud.Solicitud
 	if err := GetById(id, &solicitudAvanceCrud, "solicitudes_crud", "solicitud",
 		1); err == nil && solicitudAvanceCrud != nil {
 		SetSolicitudAvancePorSolicitudCrud(solicitudAvanceCrud, solicitudAvance)
 		return solicitudAvanceCrud, nil
 	} else {
-		return nil, Error(funcion, err, "502")
+		return nil, err
 	}
 }
 
 func SetSolicitudAvancePorSolicitudCrud(solicitudAvanceCrud *solicitudes_crud.Solicitud, solicitudAvance *models.SolicitudAvance) {
 	funcion := "SetSolicitudAvancePorSolicitudCrud"
-	defer ErrorControlFunction(funcion, "502")
+	defer ErrorControlFunction(funcion, "500")
 	if solicitudAvance != nil {
 		solicitudAvance.EstadoTipoSolicitud = solicitudAvanceCrud.EstadoTipoSolicitudId
 		solicitudAvance.FechaRadicacion = solicitudAvanceCrud.FechaRadicacion
@@ -319,7 +448,7 @@ func SetSolicitudAvancePorSolicitudCrud(solicitudAvanceCrud *solicitudes_crud.So
 
 func ObtenerSolicitantePorSolicitudId(id int, solicitudAvance *models.SolicitudAvance) (solicitante *solicitudes_crud.Solicitante, err map[string]interface{}) {
 	funcion := "ObtenerSolicitantePorSolicitudId"
-	defer ErrorControlFunction(funcion, "502")
+	defer ErrorControlFunction(funcion, "500")
 	query := make(map[string]string)
 	query["SolicitudId"] = strconv.Itoa(id)
 	var solicitantes []solicitudes_crud.Solicitante
@@ -333,13 +462,13 @@ func ObtenerSolicitantePorSolicitudId(id int, solicitudAvance *models.SolicitudA
 			return nil, Error(funcion, "No existe solicitante asociado", "502")
 		}
 	} else {
-		return nil, Error(funcion, err, "502")
+		return nil, err
 	}
 }
 
 func SetSolicitudAvancePorSolicitante(sol *solicitudes_crud.Solicitante, solicitudAvance *models.SolicitudAvance) {
 	funcion := "SetSolicitudAvancePorSolicitante"
-	defer ErrorControlFunction(funcion, "502")
+	defer ErrorControlFunction(funcion, "500")
 	if solicitudAvance != nil {
 		solicitudAvance.TerceroId = sol.TerceroId
 	}
@@ -347,7 +476,7 @@ func SetSolicitudAvancePorSolicitante(sol *solicitudes_crud.Solicitante, solicit
 
 func ObtenerObjetivoPorSolicitudId(id int, solicitudAvance *models.SolicitudAvance) (observacion *solicitudes_crud.Observacion, err map[string]interface{}) {
 	funcion := "ObtenerObjetivoPorSolicitudId"
-	defer ErrorControlFunction(funcion, "502")
+	defer ErrorControlFunction(funcion, "500")
 	o, e := ObtenerObservacionPorSolicitudId(id, 5, solicitudAvance)
 	if e == nil && solicitudAvance != nil && o != nil {
 		solicitudAvance.Objetivo = o.Valor
@@ -357,7 +486,7 @@ func ObtenerObjetivoPorSolicitudId(id int, solicitudAvance *models.SolicitudAvan
 
 func ObtenerJustificacionPorSolicitudId(id int, solicitudAvance *models.SolicitudAvance) (observacion *solicitudes_crud.Observacion, err map[string]interface{}) {
 	funcion := "ObtenerJustificacionPorSolicitudId"
-	defer ErrorControlFunction(funcion, "502")
+	defer ErrorControlFunction(funcion, "500")
 	o, e := ObtenerObservacionPorSolicitudId(id, 6, solicitudAvance)
 	if e == nil && solicitudAvance != nil && o != nil {
 		solicitudAvance.Justificacion = o.Valor
@@ -367,7 +496,7 @@ func ObtenerJustificacionPorSolicitudId(id int, solicitudAvance *models.Solicitu
 
 func ObtenerObservacionPorSolicitudId(id int, tipo int, solicitudAvance *models.SolicitudAvance) (observacion *solicitudes_crud.Observacion, err map[string]interface{}) {
 	funcion := "ObtenerObservacionPorSolicitudId"
-	defer ErrorControlFunction(funcion, "502")
+	defer ErrorControlFunction(funcion, "500")
 	query := make(map[string]string)
 	query["SolicitudId"] = strconv.Itoa(id)
 	query["TipoObservacionId"] = strconv.Itoa(tipo)
@@ -380,6 +509,6 @@ func ObtenerObservacionPorSolicitudId(id int, tipo int, solicitudAvance *models.
 			return nil, Error(funcion, "No existe solicitante asociado", "502")
 		}
 	} else {
-		return nil, Error(funcion, err, "502")
+		return nil, err
 	}
 }

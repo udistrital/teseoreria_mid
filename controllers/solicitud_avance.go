@@ -3,7 +3,6 @@ package controllers
 import (
 	"encoding/json"
 	"strconv"
-
 	"github.com/astaxie/beego"
 	"github.com/udistrital/tesoreria_mid/helpers"
 	"github.com/udistrital/tesoreria_mid/models"
@@ -45,10 +44,10 @@ func (c *SolicitudAvanceController) Post() {
 			c.Ctx.Output.SetStatus(201)
 			c.Data["json"] = map[string]interface{}{"Success": true, "Status": "201", "Message": "Registration successful", "Data": solicitudAvance}
 		} else {
-			panic(helpers.Error("Post", err3, "400"))
+			panic(helpers.Error("Post", err3, err3["status"].(string)))
 		}
 	} else {
-		panic(helpers.Error("Post", "Error en los parámetros de ingreso", "400"))
+		panic(helpers.Error("Post", "Error en los parámetros de ingreso", "400"))		
 	}
 	c.ServeJSON()
 }
@@ -72,7 +71,7 @@ func (c *SolicitudAvanceController) GetOne() {
 	if solicitudAvance, err := helpers.ObtenerSolicitudAvancePorId(id); err == nil && solicitudAvance != nil {
 		c.Data["json"] = map[string]interface{}{"Success": true, "Status": "200", "Message": "Request successful", "Data": solicitudAvance}
 	} else {
-		panic(helpers.Error("GetOne", err, "400"))
+		panic(helpers.Error("GetOne", err, err["status"].(string)))
 	}
 	c.ServeJSON()
 }
@@ -104,7 +103,7 @@ func (c *SolicitudAvanceController) GetAll() {
 	if solicitudes, err := helpers.ObtenerSolicitudesAvance(limit, offset); err == nil {
 		c.Data["json"] = map[string]interface{}{"Success": true, "Status": "200", "Message": "Request successful", "Data": solicitudes}
 	} else {
-		panic(helpers.Error("GetAll", err, "400"))
+		panic(helpers.Error("GetAll", err, err["status"].(string)))
 	}
 	c.ServeJSON()
 }
@@ -133,7 +132,7 @@ func (c *SolicitudAvanceController) Put() {
 		if err := helpers.ActualizarSolicitudAvance(&solicitudAvance); err == nil {
 			c.Data["json"] = map[string]interface{}{"Success": true, "Status": "200", "Message": "Update successful", "Data": solicitudAvance}
 		} else {
-			panic(helpers.Error(funcion, err, "400"))
+			panic(helpers.Error(funcion, err, err["status"].(string)))
 		}
 	} else {
 		panic(helpers.Error(funcion, err, "400"))
