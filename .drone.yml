@@ -7,6 +7,11 @@ workspace:
       - release/*
       - master
 
+trigger:
+  event:
+    exclude:
+      - tag
+
 kind: pipeline
 name: oas_api_ci
 
