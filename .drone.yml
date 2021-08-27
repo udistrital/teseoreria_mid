@@ -138,7 +138,7 @@ steps:
       from_secret: AWS_CONTAINER
   commands:
   - case ${DRONE_BRANCH} in
-       release)
+       release/*)
          AMBIENTE=test
          CLUSTER=test
          MYCONTAINER=$${AWS_CONTAINER}/${DRONE_REPO##udistrital/}:release
