@@ -17,9 +17,9 @@ func ObtenerCuentaBancariaBancoPorId(id int) (res *models.CuentaBancariaBanco, e
 	defer errorctrl.ErrorControlFunction(funcion, "500")
 	cuentaBancaria := models.CuentaBancariaBanco{}
 	// Consulta en giros_crud de cuentas bancarias
-	if _, err := ObtenerCuentaBancariaPorId(id, &cuentaBancaria); err == nil {
+	if cuenta, err := ObtenerCuentaBancariaPorId(id, &cuentaBancaria); err == nil {
 		// Consulta en terceros_crud
-		_, err := ObtenerInfoComplementariaPorId(34188, &cuentaBancaria)
+		_, err := ObtenerInfoComplementariaPorId(cuenta.SucursalId, &cuentaBancaria)
 		if err != nil {
 			return nil, err
 		}
@@ -36,13 +36,13 @@ func ObtenerCuentasBancariasBancos(limit int, offset int) (cuentasBancarias []mo
 	var cuentas []giros_crud.CuentaBancaria
 	if err := GetAll(&cuentas, "giros_crud", "cuenta_bancaria", 2, nil, nil, nil, nil, limit, offset); err == nil {
 		cuentasBancarias := make([]models.CuentaBancariaBanco, len(cuentas))
-		for i, solAvance := range cuentas {
-			cuenta := models.CuentaBancariaBanco{}
-			SetCuentaBancariaBancoPorCuentaBancaria(&solAvance, &cuenta)
-			if _, err := ObtenerInfoComplementariaPorId(34188, &cuenta); err != nil {
+		for i, cuenta := range cuentas {
+			cuentaBancaria := models.CuentaBancariaBanco{}
+			SetCuentaBancariaBancoPorCuentaBancaria(&cuenta, &cuentaBancaria)
+			if _, err := ObtenerInfoComplementariaPorId(cuenta.SucursalId, &cuentaBancaria); err != nil {
 				return nil, err
 			}
-			cuentasBancarias[i] = cuenta
+			cuentasBancarias[i] = cuentaBancaria
 		}
 		return cuentasBancarias, nil
 	} else {
