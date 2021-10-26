@@ -21,7 +21,7 @@ services:
       - SOLICITUDES_CRUD_URL=${SOLICITUDES_CRUD_URL}
       - TERCEROS_CRUD_URL=${TERCEROS_CRUD_URL}
       - GIROS_CRUD_URL=${GIROS_CRUD_URL}
-    command: sh -c 'cd ${API_BASE_DIR}/${API_NAME};go get -v -u ./...; go mod init; bee run'
+    command: sh -c 'cd ${API_BASE_DIR}/${API_NAME};go get -v -u ./...; go mod init; bee run -downdoc=true -gendoc=true'
     networks: 
       - back_end
 volumes:
