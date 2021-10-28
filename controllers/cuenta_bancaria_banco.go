@@ -60,11 +60,15 @@ func (c *CuentaBancariaBancoController) GetAll() {
 	// Parámetros
 	var limit int = -1
 	var offset int = -1
-	if v, err := c.GetInt("limit"); err == nil {
+	if v, err := c.GetInt("limit", -1); err == nil {
 		limit = v
+	} else {
+		panic(helpers.Error("GetOne", "Error en los parámetros de entrada limit no entero", "400"))
 	}
-	if v, err := c.GetInt("offset"); err == nil {
+	if v, err := c.GetInt("offset", -1); err == nil {
 		offset = v
+	} else {
+		panic(errorctrl.Error("GetOne", "Error en los parámetros de entrada offset no entero", "400"))
 	}
 	// Llamada a helper
 	if cuentas, err := helpers.ObtenerCuentasBancariasBancos(limit, offset); err == nil {
