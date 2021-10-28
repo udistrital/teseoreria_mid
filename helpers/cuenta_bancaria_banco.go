@@ -11,7 +11,7 @@ import (
 	errorctrl "github.com/udistrital/utils_oas/errorctrl"
 )
 
-// Obtiene una cuenta bancaria por Id
+// ObtenerCuentaBancariaBancoPorId Obtiene una cuenta bancaria por Id
 func ObtenerCuentaBancariaBancoPorId(id int) (res *models.CuentaBancariaBanco, err map[string]interface{}) {
 	funcion := "ObtenerCuentaBancariaBancoPorId"
 	defer errorctrl.ErrorControlFunction(funcion, "500")
@@ -29,7 +29,7 @@ func ObtenerCuentaBancariaBancoPorId(id int) (res *models.CuentaBancariaBanco, e
 	}
 }
 
-// Obtiene múltiples cuentas bancarias
+// ObtenerCuentasBancariasBancos Obtiene múltiples cuentas bancarias
 func ObtenerCuentasBancariasBancos(limit int, offset int) (cuentasBancarias []models.CuentaBancariaBanco, err map[string]interface{}) {
 	funcion := "ObtenerCuentasBancariasBancos"
 	defer errorctrl.ErrorControlFunction(funcion, "500")
@@ -52,6 +52,7 @@ func ObtenerCuentasBancariasBancos(limit int, offset int) (cuentasBancarias []mo
 
 // Obtención
 
+// ObtenerCuentaBancariaPorId Obtiene una cuenta bancaria de giros_crud por id
 func ObtenerCuentaBancariaPorId(id int, cuentaBancariaBanco *models.CuentaBancariaBanco) (c *giros_crud.CuentaBancaria, err map[string]interface{}) {
 	funcion := "ObtenerCuentaBancariaPorId"
 	defer errorctrl.ErrorControlFunction(funcion, "500")
@@ -65,6 +66,7 @@ func ObtenerCuentaBancariaPorId(id int, cuentaBancariaBanco *models.CuentaBancar
 	}
 }
 
+// SetCuentaBancariaBancoPorCuentaBancaria Actualiza una CuentaBancariaBanco basado en una CuentaBancaria de giros_crud
 func SetCuentaBancariaBancoPorCuentaBancaria(cuentaBancaria *giros_crud.CuentaBancaria, cuentaBancariaBanco *models.CuentaBancariaBanco) {
 	funcion := "SetCuentaBancariaBancoPorCuentaBancaria"
 	defer errorctrl.ErrorControlFunction(funcion, "500")
@@ -74,6 +76,7 @@ func SetCuentaBancariaBancoPorCuentaBancaria(cuentaBancaria *giros_crud.CuentaBa
 	}
 }
 
+// ObtenerInfoComplementariaPorId Obtiene InfoComplementaria de un tercero por id
 func ObtenerInfoComplementariaPorId(id int, cuentaBancariaBanco *models.CuentaBancariaBanco) (res *terceros_crud.InfoComplementariaTercero, err map[string]interface{}) {
 	funcion := "ObtenerInfoComplementariaPorId"
 	defer errorctrl.ErrorControlFunction(funcion, "500")
@@ -93,6 +96,7 @@ func ObtenerInfoComplementariaPorId(id int, cuentaBancariaBanco *models.CuentaBa
 	}
 }
 
+// SetCuentaBancariaPorInfoComplementaria  Actualiza una CuentaBancariaBanco basado en la sucursal que está en la InfoComplementariaTercero
 func SetCuentaBancariaPorInfoComplementaria(infoComplementaria *terceros_crud.InfoComplementariaTercero, cuentaBancariaBanco *models.CuentaBancariaBanco) {
 	funcion := "SetCuentaBancariaPorInfoComplementaria"
 	defer errorctrl.ErrorControlFunction(funcion, "500")

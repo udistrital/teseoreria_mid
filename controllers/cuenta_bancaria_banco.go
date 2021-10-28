@@ -24,7 +24,7 @@ func (c *CuentaBancariaBancoController) URLMapping() {
 // @Description get Cuenta_bancaria_banco by id
 // @Param	id		path 	string	true		"The key for staticblock"
 // @Success 200 {object} models.Cuenta_bancaria_banco
-// @Failure 403 :id is empty
+// @Failure 400 :id is empty
 // @router /:id [get]
 func (c *CuentaBancariaBancoController) GetOne() {
 	defer errorctrl.ErrorControlController(c.Controller, "CuentaBancariaBancoController")
@@ -35,8 +35,12 @@ func (c *CuentaBancariaBancoController) GetOne() {
 		panic(errorctrl.Error("GetOne", "Error en los parámetros de entrada id no entero", "400"))
 	}
 	// Lamada a helper
-	if cuentaBancaria, err := helpers.ObtenerCuentaBancariaBancoPorId(id); err == nil && cuentaBancaria != nil {
-		c.Data["json"] = map[string]interface{}{"Success": true, "Status": "200", "Message": "Request successful", "Data": cuentaBancaria}
+	if cuentaBancaria, err := helpers.ObtenerCuentaBancariaBancoPorId(id); err == nil {
+		if cuentaBancaria != nil {
+			c.Data["json"] = map[string]interface{}{"Success": true, "Status": "200", "Message": "Request successful", "Data": cuentaBancaria}
+		} else {
+			panic(errorctrl.Error("GetOne", "Cuenta no existe", "404"))
+		}
 	} else {
 		panic(errorctrl.Error("GetOne", err, err["status"].(string)))
 	}
@@ -46,14 +50,10 @@ func (c *CuentaBancariaBancoController) GetOne() {
 // GetAll ...
 // @Title GetAll
 // @Description get Cuenta_bancaria_banco
-// @Param	query	query	string	false	"Filter. e.g. col1:v1,col2:v2 ..."
-// @Param	fields	query	string	false	"Fields returned. e.g. col1,col2 ..."
-// @Param	sortby	query	string	false	"Sorted-by fields. e.g. col1,col2 ..."
-// @Param	order	query	string	false	"Order corresponding to each sortby field, if single value, apply to all sortby fields. e.g. desc,asc ..."
 // @Param	limit	query	string	false	"Limit the size of result set. Must be an integer"
 // @Param	offset	query	string	false	"Start position of result set. Must be an integer"
-// @Success 200 {object} models.Cuenta_bancaria_banco
-// @Failure 403
+// @Success 200 {object} []models.Cuenta_bancaria_banco
+// @Failure 400
 // @router / [get]
 func (c *CuentaBancariaBancoController) GetAll() {
 	defer errorctrl.ErrorControlController(c.Controller, "CuentaBancariaBancoController")
