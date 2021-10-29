@@ -23,7 +23,7 @@ func (c *CuentaBancariaBancoController) URLMapping() {
 // @Title GetOne
 // @Description get Cuenta_bancaria_banco by id
 // @Param	id		path 	string	true		"The key for staticblock"
-// @Success 200 {object} models.Cuenta_bancaria_banco
+// @Success 200 {object} models.CuentaBancariaBanco
 // @Failure 400 :id is empty
 // @router /:id [get]
 func (c *CuentaBancariaBancoController) GetOne() {
@@ -52,7 +52,7 @@ func (c *CuentaBancariaBancoController) GetOne() {
 // @Description get Cuenta_bancaria_banco
 // @Param	limit	query	string	false	"Limit the size of result set. Must be an integer"
 // @Param	offset	query	string	false	"Start position of result set. Must be an integer"
-// @Success 200 {object} []models.Cuenta_bancaria_banco
+// @Success 200 {object} []models.CuentaBancariaBanco
 // @Failure 400
 // @router / [get]
 func (c *CuentaBancariaBancoController) GetAll() {

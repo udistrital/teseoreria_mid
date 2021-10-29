@@ -32,7 +32,7 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/definitions/models.Cuenta_bancaria_banco'
+              $ref: '#/definitions/models.CuentaBancariaBanco'
         "400":
           description: ""
   /cuenta_bancaria_banco/{id}:
@@ -51,7 +51,7 @@ paths:
         "200":
           description: ""
           schema:
-            $ref: '#/definitions/models.Cuenta_bancaria_banco'
+            $ref: '#/definitions/models.CuentaBancariaBanco'
         "400":
           description: :id is empty
   /solicitud_avance/:
@@ -171,9 +171,20 @@ paths:
         "403":
           description: id is empty
 definitions:
-  models.Cuenta_bancaria_banco:
-    title: Cuenta_bancaria_banco
+  models.CuentaBancariaBanco:
+    title: CuentaBancariaBanco
     type: object
+    properties:
+      Id:
+        type: integer
+        format: int64
+      NombreBanco:
+        type: string
+      NombreSucursal:
+        type: string
+      NumeroCuenta:
+        type: integer
+        format: int64
   models.Solicitud_avance:
     title: Solicitud_avance
     type: object

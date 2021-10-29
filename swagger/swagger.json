@@ -42,7 +42,7 @@
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/models.Cuenta_bancaria_banco"
+                                "$ref": "#/definitions/models.CuentaBancariaBanco"
                             }
                         }
                     },
@@ -72,7 +72,7 @@
                     "200": {
                         "description": "",
                         "schema": {
-                            "$ref": "#/definitions/models.Cuenta_bancaria_banco"
+                            "$ref": "#/definitions/models.CuentaBancariaBanco"
                         }
                     },
                     "400": {
@@ -259,9 +259,25 @@
         }
     },
     "definitions": {
-        "models.Cuenta_bancaria_banco": {
-            "title": "Cuenta_bancaria_banco",
-            "type": "object"
+        "models.CuentaBancariaBanco": {
+            "title": "CuentaBancariaBanco",
+            "type": "object",
+            "properties": {
+                "Id": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "NombreBanco": {
+                    "type": "string"
+                },
+                "NombreSucursal": {
+                    "type": "string"
+                },
+                "NumeroCuenta": {
+                    "type": "integer",
+                    "format": "int64"
+                }
+            }
         },
         "models.Solicitud_avance": {
             "title": "Solicitud_avance",
