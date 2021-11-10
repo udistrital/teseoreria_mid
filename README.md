@@ -19,6 +19,8 @@ TESORERIA_MID_HTTP_PORT = [Puerto de ejecución del API]
 TESORERIA_MID_RUN_MODE = [Modo de ejecución]
 AVANCES_CRUD_URL = [URL del despliegue del api de avances_crud]
 SOLICITUDES_CRUD_URL = [URL del despliegue del api de solicitudes_crud]
+TERCEROS_CRUD_URL = [URL del despliegue del api de terceros_crud]
+GIROS_CRUD_URL = [URL del despliegue del api de giros_crud]
 ```
 **NOTA:** Las variables se pueden ver en el fichero conf/app.conf y .env
 

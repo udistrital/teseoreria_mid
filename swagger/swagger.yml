@@ -11,6 +11,49 @@ info:
     url: http://www.apache.org/licenses/LICENSE-2.0.html
 basePath: /v1
 paths:
+  /cuenta_bancaria_banco/:
+    get:
+      tags:
+      - cuenta_bancaria_banco
+      description: get Cuenta_bancaria_banco
+      operationId: CuentaBancariaBancoController.GetAll
+      parameters:
+      - in: query
+        name: limit
+        description: Limit the size of result set. Must be an integer
+        type: string
+      - in: query
+        name: offset
+        description: Start position of result set. Must be an integer
+        type: string
+      responses:
+        "200":
+          description: ""
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/models.CuentaBancariaBanco'
+        "400":
+          description: ""
+  /cuenta_bancaria_banco/{id}:
+    get:
+      tags:
+      - cuenta_bancaria_banco
+      description: get Cuenta_bancaria_banco by id
+      operationId: CuentaBancariaBancoController.GetOne
+      parameters:
+      - in: path
+        name: id
+        description: The key for staticblock
+        required: true
+        type: string
+      responses:
+        "200":
+          description: ""
+          schema:
+            $ref: '#/definitions/models.CuentaBancariaBanco'
+        "400":
+          description: :id is empty
   /solicitud_avance/:
     get:
       tags:
@@ -32,8 +75,7 @@ paths:
         type: string
       - in: query
         name: order
-        description: Order corresponding to each sortby field, if single value, apply
-          to all sortby fields. e.g. desc,asc ...
+        description: Order corresponding to each sortby field, if single value, apply to all sortby fields. e.g. desc,asc ...
         type: string
       - in: query
         name: limit
@@ -129,10 +171,27 @@ paths:
         "403":
           description: id is empty
 definitions:
+  models.CuentaBancariaBanco:
+    title: CuentaBancariaBanco
+    type: object
+    properties:
+      Id:
+        type: integer
+        format: int64
+      NombreBanco:
+        type: string
+      NombreSucursal:
+        type: string
+      NumeroCuenta:
+        type: integer
+        format: int64
   models.Solicitud_avance:
     title: Solicitud_avance
     type: object
 tags:
+- name: cuenta_bancaria_banco
+  description: |
+    CuentaBancariaBancoController operations for cuenta_bancaria_banco
 - name: solicitud_avance
   description: |
     SolicitudAvanceController operations for Solicitud_avance
