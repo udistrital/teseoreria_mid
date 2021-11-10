@@ -417,6 +417,8 @@ github.com/udistrital/giros_crud v0.0.1 h1:iyTnrai6cTrTucnm/8ShaszMSVie3NeS7hq2r
 github.com/udistrital/giros_crud v0.0.1/go.mod h1:hcY940m+2pYFbQ1JRJYJ7YuqgIJIoObzx36ia6gG2wE=
 github.com/udistrital/giros_crud v0.1.0 h1:lpq6vg0+qCJxh4LeNM7Btk54sqvagcyfimwN8Q4Ckfg=
 github.com/udistrital/giros_crud v0.1.0/go.mod h1:fGQhCkAcH5GRqW6uaEVc3hy0tdCwUjXBp91awsCnj/0=
+github.com/udistrital/giros_crud v0.2.0 h1:dN9Vwc3ycfk93HdlTdqPhoY7uVWhJq5S8f56EtPat6I=
+github.com/udistrital/giros_crud v0.2.0/go.mod h1:fGQhCkAcH5GRqW6uaEVc3hy0tdCwUjXBp91awsCnj/0=
 github.com/udistrital/solicitudes_crud v0.0.0-20210423220331-2cc304f74f30 h1:6clQ59QlzDcQ0Kmavfn6nFcZ+9acJ5/YftF78GYibjc=
 github.com/udistrital/solicitudes_crud v0.0.0-20210423220331-2cc304f74f30/go.mod h1:hG0MOd2fsC5vUPaiWXnoUefobZphspS739wzYQIgOX8=
 github.com/udistrital/terceros_crud v0.0.0-20210320011608-7194f6c3f52e h1:P6r/AEYgioEvD7VKPh4gsjA71KQCoG8/8awymfDZyWk=
