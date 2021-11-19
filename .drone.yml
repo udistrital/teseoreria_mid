@@ -54,21 +54,6 @@ steps:
     event:
     - push
 
-- name: go_build
-  image: golang:1.14
-  commands:
-  - go get -t
-  - GOOS=linux GOARCH=amd64 go build -o main
-  when:
-    branch:
-    - develop
-    - feature/*
-    - hotfix/*
-    - release/*
-    - master
-    event:
-    - push
-
 - name: go_run_test
   image: golang:1.14
   commands:
@@ -98,6 +83,21 @@ steps:
       from_secret: SONAR_HOST
     sonar_token:
       from_secret: SONAR_TOKEN
+
+- name: go_build
+  image: golang:1.14
+  commands:
+  - go get -t
+  - GOOS=linux GOARCH=amd64 go build -o main
+  when:
+    branch:
+    - develop
+    - feature/*
+    - hotfix/*
+    - release/*
+    - master
+    event:
+    - push
 
 - name: publish_to_ecr_release
   image: plugins/ecr
