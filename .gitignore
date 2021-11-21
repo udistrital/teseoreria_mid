@@ -1,12 +1,24 @@
+# Binarios y Temporales
+*.exe
+*~
+*.tmp
+*.log
+*.zip
 tesoreria_mid
-tesoreria_mid.exe*
-lastupdate.tmp
 main
+
+# IDEs
 .scannerwork/
 .vscode/
 ejec.sh
+
+# Variables de entorno
+*.env
+!*template.env
+!.develop.env
 custom.env
+
+# Swagger / OpenAPI
 swagger/**
 !swagger/*.json
 !swagger/*.yml
-swagger.zip
