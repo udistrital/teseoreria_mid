@@ -11,6 +11,21 @@ info:
     url: http://www.apache.org/licenses/LICENSE-2.0.html
 basePath: /v1
 paths:
+  /bancos/:
+    get:
+      tags:
+      - bancos
+      description: get Banco si tiene codigos registrados
+      operationId: BancoController.GetAll
+      responses:
+        "200":
+          description: ""
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/models.BancosPorCodigo'
+        "400":
+          description: ""
   /cuenta_bancaria_banco/:
     get:
       tags:
@@ -75,7 +90,8 @@ paths:
         type: string
       - in: query
         name: order
-        description: Order corresponding to each sortby field, if single value, apply to all sortby fields. e.g. desc,asc ...
+        description: Order corresponding to each sortby field, if single value, apply
+          to all sortby fields. e.g. desc,asc ...
         type: string
       - in: query
         name: limit
@@ -171,6 +187,20 @@ paths:
         "403":
           description: id is empty
 definitions:
+  models.BancosPorCodigo:
+    title: BancosPorCodigo
+    type: object
+    properties:
+      CodigoAch:
+        type: integer
+        format: int64
+      CodigoSuper:
+        type: integer
+        format: int64
+      NIT:
+        type: string
+      NombreBanco:
+        type: string
   models.CuentaBancariaBanco:
     title: CuentaBancariaBanco
     type: object
@@ -195,3 +225,6 @@ tags:
 - name: solicitud_avance
   description: |
     SolicitudAvanceController operations for Solicitud_avance
+- name: bancos
+  description: |
+    BancoController operations for cuenta_bancaria_banco

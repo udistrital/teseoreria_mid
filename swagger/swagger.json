@@ -15,6 +15,29 @@
     },
     "basePath": "/v1",
     "paths": {
+        "/bancos/": {
+            "get": {
+                "tags": [
+                    "bancos"
+                ],
+                "description": "get Banco si tiene codigos registrados",
+                "operationId": "BancoController.GetAll",
+                "responses": {
+                    "200": {
+                        "description": "",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.BancosPorCodigo"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": ""
+                    }
+                }
+            }
+        },
         "/cuenta_bancaria_banco/": {
             "get": {
                 "tags": [
@@ -259,6 +282,26 @@
         }
     },
     "definitions": {
+        "models.BancosPorCodigo": {
+            "title": "BancosPorCodigo",
+            "type": "object",
+            "properties": {
+                "CodigoAch": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "CodigoSuper": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "NIT": {
+                    "type": "string"
+                },
+                "NombreBanco": {
+                    "type": "string"
+                }
+            }
+        },
         "models.CuentaBancariaBanco": {
             "title": "CuentaBancariaBanco",
             "type": "object",
@@ -292,6 +335,10 @@
         {
             "name": "solicitud_avance",
             "description": "SolicitudAvanceController operations for Solicitud_avance\n"
+        },
+        {
+            "name": "bancos",
+            "description": "BancoController operations for cuenta_bancaria_banco\n"
         }
     ]
 }
