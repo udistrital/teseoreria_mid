@@ -38,6 +38,7 @@ func ObtenerBancosConCodigos() (res *[]models.BancosPorCodigo, err map[string]in
 					BancoCod.CodigoSuper = aux.CodigoSuper
 					BancoCod.CodigoAch = aux.CodigoAch
 					BancoCod.NombreBanco = BancosCodTemp[0].TerceroId.NombreCompleto
+					BancoCod.Activo = BancosCodTemp[0].TerceroId.Activo
 					BancosCod = append(BancosCod, BancoCod)
 				}
 			}

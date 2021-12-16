@@ -286,6 +286,9 @@
             "title": "BancosPorCodigo",
             "type": "object",
             "properties": {
+                "Activo": {
+                    "type": "boolean"
+                },
                 "CodigoAch": {
                     "type": "integer",
                     "format": "int64"
