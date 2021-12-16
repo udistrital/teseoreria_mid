@@ -19,13 +19,24 @@ func (c *BancoController) URLMapping() {
 // GetAll ...
 // @Title GetAll
 // @Description get Banco si tiene codigos registrados
+// @Param	limit	query	string	false	"Limit the size of result set. Must be an integer"
+// @Param	offset	query	string	false	"Start position of result set. Must be an integer"
 // @Success 200 {object} []models.BancosPorCodigo
 // @Failure 400
 // @router / [get]
 func (c *BancoController) GetAll() {
 	defer errorctrl.ErrorControlController(c.Controller, "BancoController")
+	// Parámetros
+	var limit int = 0
+	var offset int = 0
+	if v, err := c.GetInt("limit"); err == nil {
+		limit = v
+	}
+	if v, err := c.GetInt("offset"); err == nil {
+		offset = v
+	}
 	// Lamada a helper
-	if banco, err := helpers.ObtenerBancosConCodigos(); err == nil {
+	if banco, err := helpers.ObtenerBancosConCodigos(limit, offset); err == nil {
 		if banco != nil {
 			c.Data["json"] = map[string]interface{}{"Success": true, "Status": "200", "Message": "Request successful", "Data": banco}
 		} else {
