@@ -33,6 +33,7 @@ func ObtenerBancosConCodigos() (res *[]models.BancosPorCodigo, err map[string]in
 				query2["TipoDocumentoId__CodigoAbreviacion"] = "NIT"
 				if err2 := GetAll(&BancosNit, "terceros_crud", "datos_identificacion", 1, query2, nil, nil, nil, 0, 0); err2 == nil{
 					json.Unmarshal([]byte(BancosCodTemp[0].Dato), &aux)
+					BancoCod.IdTercero = BancosCodTemp[0].TerceroId.Id
 					BancoCod.NIT = BancosNit[0].Numero
 					BancoCod.CodigoSuper = aux.CodigoSuper
 					BancoCod.CodigoAch = aux.CodigoAch

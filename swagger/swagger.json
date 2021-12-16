@@ -294,6 +294,10 @@
                     "type": "integer",
                     "format": "int64"
                 },
+                "IdTercero": {
+                    "type": "integer",
+                    "format": "int64"
+                },
                 "NIT": {
                     "type": "string"
                 },
