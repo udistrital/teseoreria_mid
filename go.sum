@@ -415,6 +415,7 @@ github.com/udistrital/terceros_crud v0.0.0-20210320011608-7194f6c3f52e/go.mod h1
 github.com/udistrital/utils_oas v0.0.0-20210916022348-721ac824ef36/go.mod h1:ctr3PgpZazF32ukxlLZP3AVjq8b2zaZ4beG4cqkx5ZA=
 github.com/udistrital/utils_oas v0.0.0-20211011160436-7fa8127363aa h1:nzKR3AWWkX5b1A1hzNNHKLDnugkNWH8ll/Mb6mbdUMs=
 github.com/udistrital/utils_oas v0.0.0-20211011160436-7fa8127363aa/go.mod h1:ctr3PgpZazF32ukxlLZP3AVjq8b2zaZ4beG4cqkx5ZA=
+github.com/udistrital/utils_oas v0.0.0-20211125230753-1091d2af48e2 h1:Wm9ajQ3KKsENErkXeIs3xWpAjH82yuFOzHQOcugZETk=
 github.com/ugorji/go v0.0.0-20171122102828-84cb69a8af83/go.mod h1:hnLbHMwcvSihnDhEfx2/BzKp2xb0Y+ErdfYcrs9tkJQ=
 github.com/urfave/cli v1.20.0/go.mod h1:70zkFmudgCuE/ngEzBv17Jvp/497gISqfk5gWijbERA=
 github.com/urfave/cli v1.22.1/go.mod h1:Gos4lmkARVdJ6EkW0WaNv/tZAAMe9V7XWyB60NtXRu0=

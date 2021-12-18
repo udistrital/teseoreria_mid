@@ -25,6 +25,11 @@ func init() {
 				&controllers.SolicitudAvanceController{},
 			),
 		),
+		beego.NSNamespace("/bancos",
+			beego.NSInclude(
+				&controllers.BancoController{},
+			),
+		),
 	)
 	beego.AddNamespace(ns)
 }

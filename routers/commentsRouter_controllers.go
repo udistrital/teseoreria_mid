@@ -7,6 +7,15 @@ import (
 
 func init() {
 
+    beego.GlobalControllerRouter["github.com/udistrital/tesoreria_mid/controllers:BancoController"] = append(beego.GlobalControllerRouter["github.com/udistrital/tesoreria_mid/controllers:BancoController"],
+        beego.ControllerComments{
+            Method: "GetAll",
+            Router: "/",
+            AllowHTTPMethods: []string{"get"},
+            MethodParams: param.Make(),
+            Filters: nil,
+            Params: nil})
+
     beego.GlobalControllerRouter["github.com/udistrital/tesoreria_mid/controllers:CuentaBancariaBancoController"] = append(beego.GlobalControllerRouter["github.com/udistrital/tesoreria_mid/controllers:CuentaBancariaBancoController"],
         beego.ControllerComments{
             Method: "GetAll",
