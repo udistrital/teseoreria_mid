@@ -87,9 +87,9 @@ Pruebas unitarias
 
 ## Estado CI
 
-| Develop | Release 0.1.1 | Master |
+| Develop | Release 0.2.0 | Master |
 | -- | -- | -- |
-| [![Build Status](https://hubci.portaloas.udistrital.edu.co/api/badges/udistrital/tesoreria_mid/status.svg?ref=refs/heads/develop)](https://hubci.portaloas.udistrital.edu.co/udistrital/tesoreria_mid) | [![Build Status](https://hubci.portaloas.udistrital.edu.co/api/badges/udistrital/tesoreria_mid/status.svg?ref=refs/heads/release/0.1.1)](https://hubci.portaloas.udistrital.edu.co/udistrital/tesoreria_mid) | [![Build Status](https://hubci.portaloas.udistrital.edu.co/api/badges/udistrital/tesoreria_mid/status.svg?ref=refs/heads/master)](https://hubci.portaloas.udistrital.edu.co/udistrital/tesoreria_mid) |
+| [![Build Status](https://hubci.portaloas.udistrital.edu.co/api/badges/udistrital/tesoreria_mid/status.svg?ref=refs/heads/develop)](https://hubci.portaloas.udistrital.edu.co/udistrital/tesoreria_mid) | [![Build Status](https://hubci.portaloas.udistrital.edu.co/api/badges/udistrital/tesoreria_mid/status.svg?ref=refs/heads/release/0.2.0)](https://hubci.portaloas.udistrital.edu.co/udistrital/tesoreria_mid) | [![Build Status](https://hubci.portaloas.udistrital.edu.co/api/badges/udistrital/tesoreria_mid/status.svg?ref=refs/heads/master)](https://hubci.portaloas.udistrital.edu.co/udistrital/tesoreria_mid) |
 
 ## Licencia
 
