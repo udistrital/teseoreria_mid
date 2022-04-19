@@ -9,7 +9,6 @@ require (
 	github.com/mitchellh/mapstructure v1.4.2
 	github.com/prometheus/common v0.32.1 // indirect
 	github.com/prometheus/procfs v0.7.3 // indirect
-	github.com/smartystreets/goconvey v1.6.4
 	github.com/udistrital/avances_crud v0.0.0-20210315195642-9b92c10ea8a6
 	github.com/udistrital/giros_crud v0.2.0
 	github.com/udistrital/solicitudes_crud v0.0.0-20210423220331-2cc304f74f30
