@@ -167,7 +167,10 @@
                     "200": {
                         "description": "",
                         "schema": {
-                            "$ref": "#/definitions/models.Solicitud_avance"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.SolicitudAvance"
+                            }
                         }
                     },
                     "403": {
@@ -179,16 +182,16 @@
                 "tags": [
                     "solicitud_avance"
                 ],
-                "description": "create Solicitud_avance",
+                "description": "create SolicitudAvance",
                 "operationId": "SolicitudAvanceController.Create",
                 "parameters": [
                     {
                         "in": "body",
                         "name": "body",
-                        "description": "body for Solicitud_avance content",
+                        "description": "body for SolicitudAvance content",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.Solicitud_avance"
+                            "$ref": "#/definitions/models.SolicitudAvance"
                         }
                     }
                 ],
@@ -196,7 +199,7 @@
                     "201": {
                         "description": "",
                         "schema": {
-                            "$ref": "#/definitions/models.Solicitud_avance"
+                            "$ref": "#/definitions/models.SolicitudAvance"
                         }
                     },
                     "403": {
@@ -225,7 +228,7 @@
                     "200": {
                         "description": "",
                         "schema": {
-                            "$ref": "#/definitions/models.Solicitud_avance"
+                            "$ref": "#/definitions/models.SolicitudAvance"
                         }
                     },
                     "403": {
@@ -253,7 +256,7 @@
                         "description": "body for Solicitud_avance content",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.Solicitud_avance"
+                            "$ref": "#/definitions/models.SolicitudAvance"
                         }
                     }
                 ],
@@ -261,7 +264,7 @@
                     "200": {
                         "description": "",
                         "schema": {
-                            "$ref": "#/definitions/models.Solicitud_avance"
+                            "$ref": "#/definitions/models.SolicitudAvance"
                         }
                     },
                     "403": {
@@ -296,6 +299,10 @@
         }
     },
     "definitions": {
+        "avances_crud.TipoAvance": {
+            "title": "TipoAvance",
+            "type": "object"
+        },
         "models.BancosPorCodigo": {
             "title": "BancosPorCodigo",
             "type": "object",
@@ -343,8 +350,97 @@
                 }
             }
         },
-        "models.Solicitud_avance": {
-            "title": "Solicitud_avance",
+        "models.SolicitudAvance": {
+            "title": "SolicitudAvance",
+            "type": "object",
+            "properties": {
+                "Activo": {
+                    "type": "boolean"
+                },
+                "AreaFuncionalId": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "AvanceTotal": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/avances_crud.TipoAvance"
+                    }
+                },
+                "CargoOrdenadorGastoId": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "ConvenioId": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "DependenciaId": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "EstadoTipoSolicitud": {
+                    "$ref": "#/definitions/solicitudes_crud.EstadoTipoSolicitud"
+                },
+                "FacultadId": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "FechaCreacion": {
+                    "type": "string"
+                },
+                "FechaEvento": {
+                    "type": "string"
+                },
+                "FechaModificacion": {
+                    "type": "string"
+                },
+                "FechaRadicacion": {
+                    "type": "string"
+                },
+                "Id": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "Justificacion": {
+                    "type": "string"
+                },
+                "Objetivo": {
+                    "type": "string"
+                },
+                "ProyectoCurricularId": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "ProyectoInvId": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "Resultado": {
+                    "type": "string"
+                },
+                "SolicitudFinalizada": {
+                    "type": "boolean"
+                },
+                "SolicitudId": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "TerceroId": {
+                    "type": "integer",
+                    "format": "int64"
+                },
+                "TipoAvance": {
+                    "$ref": "#/definitions/map[string][1810.0xc0003d8330.false]"
+                },
+                "VigenciaId": {
+                    "type": "integer",
+                    "format": "int64"
+                }
+            }
+        },
+        "solicitudes_crud.EstadoTipoSolicitud": {
+            "title": "EstadoTipoSolicitud",
             "type": "object"
         }
     },

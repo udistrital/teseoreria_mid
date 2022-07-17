@@ -3,6 +3,7 @@ package controllers
 import (
 	"encoding/json"
 	"strconv"
+
 	"github.com/astaxie/beego"
 	"github.com/udistrital/tesoreria_mid/helpers"
 	"github.com/udistrital/tesoreria_mid/models"
@@ -25,9 +26,9 @@ func (c *SolicitudAvanceController) URLMapping() {
 
 // Post ...
 // @Title Create
-// @Description create Solicitud_avance
-// @Param	body		body 	models.Solicitud_avance	true		"body for Solicitud_avance content"
-// @Success 201 {object} models.Solicitud_avance
+// @Description create SolicitudAvance
+// @Param	body		body 	models.SolicitudAvance	true		"body for SolicitudAvance content"
+// @Success 201 {object} models.SolicitudAvance
 // @Failure 403 body is empty
 // @router / [post]
 func (c *SolicitudAvanceController) Post() {
@@ -47,7 +48,7 @@ func (c *SolicitudAvanceController) Post() {
 			panic(helpers.Error("Post", err3, err3["status"].(string)))
 		}
 	} else {
-		panic(helpers.Error("Post", "Error en los parámetros de ingreso", "400"))		
+		panic(helpers.Error("Post", "Error en los parámetros de ingreso", "400"))
 	}
 	c.ServeJSON()
 }
@@ -56,7 +57,7 @@ func (c *SolicitudAvanceController) Post() {
 // @Title GetOne
 // @Description get Solicitud_avance by id
 // @Param	id		path 	string	true		"The key for staticblock"
-// @Success 200 {object} models.Solicitud_avance
+// @Success 200 {object} models.SolicitudAvance
 // @Failure 403 :id is empty
 // @router /:id [get]
 func (c *SolicitudAvanceController) GetOne() {
@@ -85,7 +86,7 @@ func (c *SolicitudAvanceController) GetOne() {
 // @Param	order	query	string	false	"Order corresponding to each sortby field, if single value, apply to all sortby fields. e.g. desc,asc ..."
 // @Param	limit	query	string	false	"Limit the size of result set. Must be an integer"
 // @Param	offset	query	string	false	"Start position of result set. Must be an integer"
-// @Success 200 {object} models.Solicitud_avance
+// @Success 200 {object} []models.SolicitudAvance
 // @Failure 403
 // @router / [get]
 func (c *SolicitudAvanceController) GetAll() {
@@ -112,8 +113,8 @@ func (c *SolicitudAvanceController) GetAll() {
 // @Title Put
 // @Description update the Solicitud_avance
 // @Param	id		path 	string	true		"The id you want to update"
-// @Param	body		body 	models.Solicitud_avance	true		"body for Solicitud_avance content"
-// @Success 200 {object} models.Solicitud_avance
+// @Param	body		body 	models.SolicitudAvance	true		"body for Solicitud_avance content"
+// @Success 200 {object} models.SolicitudAvance
 // @Failure 403 :id is not int
 // @router /:id [put]
 func (c *SolicitudAvanceController) Put() {
