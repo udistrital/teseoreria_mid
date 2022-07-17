@@ -14,9 +14,8 @@ ejec.sh
 
 # Variables de entorno
 *.env
-!*template.env
+!*template*.env
 !.develop.env
-custom.env
 
 # Swagger / OpenAPI
 swagger/**
