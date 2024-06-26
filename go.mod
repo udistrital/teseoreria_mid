@@ -11,9 +11,6 @@ require (
 	github.com/udistrital/giros_crud v0.2.0
 	github.com/udistrital/solicitudes_crud v0.0.0-20210423220331-2cc304f74f30
 	github.com/udistrital/terceros_crud v0.0.0-20220305024642-8fc4eeed9bf5
-	github.com/udistrital/utils_oas v0.0.0-20220415063412-5dae4bd58180
-	golang.org/x/crypto v0.0.0-20220411220226-7b82a4e95df4 // indirect
-	golang.org/x/net v0.0.0-20220418201149-a630d4f3e7a2 // indirect
-	golang.org/x/sys v0.0.0-20220412211240-33da011f77ad // indirect
+	github.com/udistrital/utils_oas v0.0.0-20240430155342-465f75e9f273
 	google.golang.org/protobuf v1.28.0 // indirect
 )
